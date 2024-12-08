@@ -1,30 +1,33 @@
 title: Photo Portfolio
 baseurl: "/photos"
-url: "https://yourusername.github.io"
+url: ""
 
 # Build settings
 markdown: kramdown
+theme: jekyll-theme-primer
 
-# Include photo directories and their contents
-include:
-  - "photos"
-  - "photos/*"
-  - "photos/**/*"
+# Collections
+collections:
+  photos:
+    output: true
+    permalink: /:collection/:path/
 
-# Default layout for pages
+# Defaults
 defaults:
   - scope:
       path: ""
+      type: "photos"
     values:
-      layout: "default"
+      layout: "gallery"
 
-# Exclude files from processing
+plugins:
+  - jekyll-github-metadata
+  - jekyll-seo-tag
+
+# Exclude from processing
 exclude:
   - Gemfile
   - Gemfile.lock
   - node_modules
   - vendor
   - README.md
-
-# Debug settings
-verbose: true
