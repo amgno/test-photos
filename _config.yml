@@ -5,18 +5,17 @@ url: "https://yourusername.github.io"
 # Build settings
 markdown: kramdown
 
-# Collections
-collections:
-  works:
-    output: true
-    permalink: /:collection/:title/
-
+# Default layout for photo directories
 defaults:
   - scope:
-      path: ""
-      type: "works"
+      path: "photos"
+      type: "pages"
     values:
-      layout: "work"
+      layout: "gallery"
+
+# Include photo directories
+include:
+  - "photos"
 
 # Exclude files from processing
 exclude:
