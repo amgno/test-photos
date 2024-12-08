@@ -8,54 +8,46 @@ title: Photo Portfolio
         <nav class="sidebar">
             <h1>PHOTOS</h1>
             <ul class="nav-links">
-                <li><a href="{{ '/' | relative_url }}" class="active">LIST</a></li>
-                <li><a href="{{ '/portfolio' | relative_url }}">PORTFOLIO</a></li>
+                <li><a href="#" class="active">LIST</a></li>
+                <li><a href="#">PORTFOLIO</a></li>
             </ul>
             <div class="language-switch">
-                <a href="{{ page.url }}" class="active">EN</a> / <a href="{{ page.url | replace: '/en/', '/de/' }}">DE</a>
+                <a href="#" class="active">EN</a> / <a href="#">DE</a>
             </div>
         </nav>
         <main class="content">
             <div class="filters">
                 <select id="year-filter" onchange="filterWorks()">
                     <option value="">YEAR ▾</option>
-                    {% assign image_dirs = site.static_files | where_exp: "file", "file.path contains '/photos/'" %}
-                    {% assign years = image_dirs | map: "path" | map: "dirname" | uniq | sort | reverse %}
-                    {% for path in years %}
-                        {% assign year = path | split: "-" | first | split: "/" | last %}
-                        {% if year.size == 4 and year contains "20" %}
-                            <option value="{{ year }}">{{ year }}</option>
-                        {% endif %}
-                    {% endfor %}
                 </select>
                 <select id="title-filter" onchange="filterWorks()">
                     <option value="">TITLE ▾</option>
-                    {% assign image_dirs = site.static_files | where_exp: "file", "file.path contains '/photos/'" %}
-                    {% assign locations = image_dirs | map: "path" | map: "dirname" | uniq | sort %}
-                    {% for path in locations %}
-                        {% assign parts = path | split: "-" %}
-                        {% if parts.size > 1 %}
-                            {% assign location = parts[1] | split: "/" | first %}
-                            <option value="{{ location }}">{{ location }}</option>
-                        {% endif %}
-                    {% endfor %}
                 </select>
             </div>
+
+            <!-- Debug info -->
+            <div class="debug-info" style="margin-bottom: 20px; font-family: monospace; font-size: 12px;">
+                <p>Base URL: {{ site.baseurl }}</p>
+                <p>Available static files:</p>
+                <ul>
+                {% for file in site.static_files %}
+                    <li>{{ file.path }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+
             <div class="works-list">
-                {% assign image_dirs = site.static_files | where_exp: "file", "file.path contains '/photos/'" %}
-                {% assign unique_dirs = image_dirs | map: "path" | map: "dirname" | uniq | sort | reverse %}
-                
-                {% for dir in unique_dirs %}
-                    {% assign parts = dir | split: "-" %}
-                    {% if parts.size > 1 %}
-                        {% assign year = parts[0] | split: "/" | last %}
-                        {% assign location = parts[1] | split: "/" | first %}
-                        {% if year.size == 4 and year contains "20" %}
-                            <div class="work-row" onclick="showGallery('{{ dir }}', '{{ location }}', '{{ year }}')">
-                                <span class="year">{{ year }}</span>
-                                <span class="title">{{ location }}</span>
-                            </div>
-                        {% endif %}
+                <!-- First try with simple directory listing -->
+                {% assign dirs = site.static_files | map: "path" | group_by_exp: "path", "path | split: '/' | slice: 1, 1 | join: '/'" %}
+                {% for dir in dirs %}
+                    {% if dir.name contains "-" %}
+                        {% assign parts = dir.name | split: "-" %}
+                        {% assign year = parts[0] %}
+                        {% assign location = parts[1] %}
+                        <div class="work-row" onclick="showGallery('{{ dir.name }}')">
+                            <span class="year">{{ year }}</span>
+                            <span class="title">{{ location }}</span>
+                        </div>
                     {% endif %}
                 {% endfor %}
             </div>
@@ -66,17 +58,23 @@ title: Photo Portfolio
         <div class="gallery-header">
             <a href="#" class="close-button" onclick="hideGallery(event)">×</a>
         </div>
-        <div class="photo-grid">
-            <!-- Photos will be loaded here dynamically -->
-        </div>
+        <div class="photo-grid"></div>
     </div>
 </div>
 
 <script>
+// Debug function
+function debugInfo(msg) {
+    console.log('[Debug]:', msg);
+}
+
 function filterWorks() {
     const yearFilter = document.getElementById('year-filter').value;
     const titleFilter = document.getElementById('title-filter').value;
     const works = document.querySelectorAll('.work-row');
+    
+    debugInfo(`Filtering - Year: ${yearFilter}, Title: ${titleFilter}`);
+    debugInfo(`Found ${works.length} work items`);
 
     works.forEach(work => {
         const year = work.querySelector('.year').textContent;
@@ -87,32 +85,38 @@ function filterWorks() {
     });
 }
 
-function showGallery(dir, location, year) {
+function showGallery(dirName) {
+    debugInfo(`Opening gallery for directory: ${dirName}`);
+    
     const galleryView = document.querySelector('.gallery-view');
     const photoGrid = galleryView.querySelector('.photo-grid');
     
     // Clear existing photos
     photoGrid.innerHTML = '';
     
-    // Get all images in the directory
-    {% assign all_images = site.static_files | where_exp: "file", "file.path contains '/photos/'" %}
+    // Get all images for this directory
+    {% assign all_files = site.static_files | where_exp: "file", "file.path contains '.jpg' or file.path contains '.jpeg' or file.path contains '.png'" %}
     const images = [
-        {% for image in all_images %}
-            {% assign ext = image.path | split: "." | last | downcase %}
-            {% if ext == "jpg" or ext == "jpeg" or ext == "png" or ext == "gif" or ext == "webp" %}
-                {
-                    path: "{{ image.path }}",
-                    dir: "{{ image.path | split: '/' | reverse | drop: 1 | reverse | join: '/' }}"
-                },
-            {% endif %}
+        {% for file in all_files %}
+        {
+            path: "{{ file.path }}",
+            directory: "{{ file.path | split: '/' | slice: 1, 1 | join: '/' }}"
+        },
         {% endfor %}
-    ].filter(img => img.dir === dir);
-
+    ];
+    
+    debugInfo(`Found ${images.length} total images`);
+    
+    const directoryImages = images.filter(img => img.directory === dirName);
+    debugInfo(`Found ${directoryImages.length} images for directory ${dirName}`);
+    
     // Add photos to the gallery
-    images.forEach(image => {
+    directoryImages.forEach(image => {
         const photoItem = document.createElement('div');
         photoItem.className = 'photo-item';
-        photoItem.innerHTML = `<img src="{{ site.baseurl }}${image.path}" alt="${location}" loading="lazy">`;
+        const imgPath = `{{ site.baseurl }}${image.path}`;
+        debugInfo(`Adding image: ${imgPath}`);
+        photoItem.innerHTML = `<img src="${imgPath}" loading="lazy">`;
         photoGrid.appendChild(photoItem);
     });
 
@@ -123,8 +127,17 @@ function showGallery(dir, location, year) {
 
 function hideGallery(event) {
     event.preventDefault();
+    debugInfo('Closing gallery');
     const galleryView = document.querySelector('.gallery-view');
     galleryView.classList.remove('active');
     document.body.style.overflow = '';
 }
+
+// Initial debug info
+document.addEventListener('DOMContentLoaded', () => {
+    debugInfo('Page loaded');
+    debugInfo(`Base URL: {{ site.baseurl }}`);
+    const works = document.querySelectorAll('.work-row');
+    debugInfo(`Found ${works.length} work items on load`);
+});
 </script> 

@@ -5,17 +5,18 @@ url: "https://yourusername.github.io"
 # Build settings
 markdown: kramdown
 
-# Default layout for photo directories
-defaults:
-  - scope:
-      path: "photos"
-      type: "pages"
-    values:
-      layout: "gallery"
-
-# Include photo directories
+# Include photo directories and their contents
 include:
   - "photos"
+  - "photos/*"
+  - "photos/**/*"
+
+# Default layout for pages
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
 
 # Exclude files from processing
 exclude:
@@ -24,3 +25,6 @@ exclude:
   - node_modules
   - vendor
   - README.md
+
+# Debug settings
+verbose: true
