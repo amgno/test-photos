@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photos</title>
+    <link rel="stylesheet" href="/photos/assets/css/styles.css">
+</head>
+<body>
+    <!-- Debug output -->
+<div style="display: none; padding: 20px; background: #f5f5f5; font-family: monospace; font-size: 12px; margin-bottom: 20px;">
+    <h3>Debug Info:</h3>
+    <p>Static Files in /img:</p>
+    <ul>
+    
+        
+    
+        
+    
+        
+            <li>/img/2022-Milan/R0000181.JPG</li>
+        
+    
+        
+            <li>/img/2022-Milan/R0000902.JPG</li>
+        
+    
+        
+            <li>/img/2022-Milan/img1.JPG</li>
+        
+    
+        
+            <li>/img/2023-Paris/img2.PNG</li>
+        
+    
+        
+    
+    </ul>
+</div>
+
+<div class="container">
+    <nav class="sidebar">
+        <h1>A MAGNO</h1>
+        <ul class="nav-links">
+            <li><a href="/photos/" class="active">PHOTOS LIST</a></li>
+            <li><a href="https://instagram.com/mggno">INSTAGRAM</a></li>
+            <li><a href="https://a.magno.me">PORTFOLIO</a></li>
+        </ul>
+    </nav>
+    <main class="content">
+        <div class="filters">
+            <select id="year-filter" onchange="filterWorks()">
+                <option value="">YEAR ▾</option>
+            </select>
+            <select id="title-filter" onchange="filterWorks()">
+                <option value="">TITLE ▾</option>
+            </select>
+        </div>
+
+        <div class="works-list">
+            <!-- Works will be populated by JavaScript -->
+        </div>
+    </main>
+
+    <div class="gallery-view">
+        <div class="gallery-header">
+            <a href="#" class="close-button" onclick="hideGallery(event)">×</a>
+        </div>
+        <div class="photo-grid"></div>
+    </div>
+</div>
+
+<script>
+console.log('Starting script execution');
+
+// Get all image paths from Jekyll
+const imagePaths = [
+    
+        
+    
+        
+    
+        
+            "/img/2022-Milan/R0000181.JPG",
+        
+    
+        
+            "/img/2022-Milan/R0000902.JPG",
+        
+    
+        
+            "/img/2022-Milan/img1.JPG",
+        
+    
+        
+            "/img/2023-Paris/img2.PNG",
+        
+    
+        
+    
+];
+
+console.log('Image paths:', imagePaths);
+
+// Process image data
+const imageData = {
+    folders: [],
+    images: []
+};
+
+// Process paths to extract folder information
+imagePaths.forEach(path => {
+    const parts = path.split('/');
+    if (parts.length >= 3) {
+        const folderName = parts[2]; // e.g., "2022-Milan"
+        const [year, location] = folderName.split('-');
+        
+        // Add to folders if not already present
+        if (!imageData.folders.some(f => f.path === `/img/${folderName}`)) {
+            imageData.folders.push({
+                path: `/img/${folderName}`,
+                year: year,
+                location: location
+            });
+        }
+        
+        // Add to images
+        imageData.images.push({
+            path: path,
+            folder: `/img/${folderName}`
+        });
+    }
+});
+
+// Sort folders by year (newest first)
+imageData.folders.sort((a, b) => b.year - a.year);
+
+console.log('Processed image data:', imageData);
+
+// Populate filters
+function populateFilters() {
+    console.log('Populating filters');
+    const yearFilter = document.getElementById('year-filter');
+    const titleFilter = document.getElementById('title-filter');
+    
+    // Get unique years and locations
+    const years = [...new Set(imageData.folders.map(f => f.year))].sort().reverse();
+    const locations = [...new Set(imageData.folders.map(f => f.location))].sort();
+    
+    console.log('Years found:', years);
+    console.log('Locations found:', locations);
+    
+    // Populate year filter
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearFilter.appendChild(option);
+    });
+    
+    // Populate location filter
+    locations.forEach(location => {
+        const option = document.createElement('option');
+        option.value = location;
+        option.textContent = location;
+        titleFilter.appendChild(option);
+    });
+}
+
+// Display works
+function displayWorks() {
+    console.log('Displaying works');
+    const worksList = document.querySelector('.works-list');
+    worksList.innerHTML = '';
+    
+    console.log('Folders to display:', imageData.folders);
+    
+    imageData.folders.forEach(folder => {
+        const workRow = document.createElement('div');
+        workRow.className = 'work-row';
+        workRow.dataset.year = folder.year;
+        workRow.dataset.title = folder.location;
+        workRow.onclick = () => showGallery(folder.path);
+        
+        workRow.innerHTML = `
+            <span class="year">${folder.year}</span>
+            <span class="title">${folder.location}</span>
+        `;
+        
+        worksList.appendChild(workRow);
+    });
+}
+
+function filterWorks() {
+    console.log('Filtering works');
+    const yearFilter = document.getElementById('year-filter').value;
+    const titleFilter = document.getElementById('title-filter').value;
+    const works = document.querySelectorAll('.work-row');
+
+    works.forEach(work => {
+        const year = work.dataset.year;
+        const title = work.dataset.title;
+        const showYear = !yearFilter || year === yearFilter;
+        const showTitle = !titleFilter || title === titleFilter;
+        work.style.display = showYear && showTitle ? '' : 'none';
+    });
+}
+
+function showGallery(folderPath) {
+    console.log('Showing gallery for:', folderPath);
+    const galleryView = document.querySelector('.gallery-view');
+    const photoGrid = galleryView.querySelector('.photo-grid');
+    const mainContent = document.querySelector('.main-content');
+    
+    photoGrid.innerHTML = '';
+    
+    // Filter images for this folder
+    const folderImages = imageData.images.filter(img => img.folder === folderPath);
+    console.log('Images found for folder:', folderImages);
+    
+    // Add images to gallery
+    folderImages.forEach(image => {
+        const photoItem = document.createElement('div');
+        photoItem.className = 'photo-item';
+        photoItem.innerHTML = `<img src="/photos${image.path}" loading="lazy">`;
+        photoGrid.appendChild(photoItem);
+    });
+
+    galleryView.classList.add('active');
+    mainContent.classList.add('gallery-open');
+    document.body.style.overflow = 'hidden';
+}
+
+function hideGallery(event) {
+    event.preventDefault();
+    console.log('Hiding gallery');
+    const galleryView = document.querySelector('.gallery-view');
+    const mainContent = document.querySelector('.main-content');
+    galleryView.classList.remove('active');
+    mainContent.classList.remove('gallery-open');
+    document.body.style.overflow = '';
+}
+
+// Initialize
+console.log('Initializing application');
+populateFilters();
+displayWorks();
+</script> 
+</body>
+</html> 
