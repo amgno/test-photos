@@ -195,7 +195,7 @@ function showGallery(folderPath) {
         photoItem.className = 'photo-item';
         
         photoItem.innerHTML = `
-            <div class="image-container">
+            <div class="image-wrapper">
                 <img src="{{ site.baseurl }}${image.path}" loading="lazy">
                 <div class="photo-info">
                     <div class="location">${folderInfo.location}</div>
