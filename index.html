@@ -7,34 +7,54 @@ title: Photo Portfolio
     <nav class="sidebar">
         <h1>PHOTOS</h1>
         <ul class="nav-links">
-            <li><a href="#" class="active">LIST</a></li>
-            <li><a href="portfolio.html">PORTFOLIO</a></li>
+            <li><a href="{{ '/' | relative_url }}" class="active">LIST</a></li>
+            <li><a href="{{ '/portfolio' | relative_url }}">PORTFOLIO</a></li>
         </ul>
         <div class="language-switch">
-            <a href="#" class="active">EN</a> / <a href="#">DE</a>
+            <a href="{{ page.url }}" class="active">EN</a> / <a href="{{ page.url | replace: '/en/', '/de/' }}">DE</a>
         </div>
     </nav>
     <main class="content">
         <div class="filters">
-            <select id="year-filter">
+            <select id="year-filter" onchange="filterWorks()">
                 <option value="">YEAR ▾</option>
+                {% assign years = site.works | map: "date" | map: "year" | uniq | sort | reverse %}
+                {% for year in years %}
+                    <option value="{{ year }}">{{ year }}</option>
+                {% endfor %}
             </select>
-            <select id="title-filter">
+            <select id="title-filter" onchange="filterWorks()">
                 <option value="">TITLE ▾</option>
+                {% assign titles = site.works | map: "title" | sort %}
+                {% for title in titles %}
+                    <option value="{{ title }}">{{ title }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="works-list">
-            <!-- Works will be populated by JavaScript -->
+            {% assign sorted_works = site.works | sort: 'date' | reverse %}
+            {% for work in sorted_works %}
+            <a href="{{ work.url | relative_url }}" class="work-row">
+                <span class="year">{{ work.date | date: "%Y" }}</span>
+                <span class="title">{{ work.title }}</span>
+            </a>
+            {% endfor %}
         </div>
     </main>
 </div>
 
 <script>
-    // Generate directory structure from Jekyll collections
-    window.directoryStructure = [
-        {% for work in site.works %}
-            "{{ work.path | split: '/' | last | split: '.' | first }}"{% unless forloop.last %},{% endunless %}
-        {% endfor %}
-    ];
-</script>
-<script src="{{ '/assets/js/script.js' | relative_url }}"></script> 
+function filterWorks() {
+    const yearFilter = document.getElementById('year-filter').value;
+    const titleFilter = document.getElementById('title-filter').value;
+    const works = document.querySelectorAll('.work-row');
+
+    works.forEach(work => {
+        const year = work.querySelector('.year').textContent;
+        const title = work.querySelector('.title').textContent;
+        const showYear = !yearFilter || year === yearFilter;
+        const showTitle = !titleFilter || title === titleFilter;
+        work.style.display = showYear && showTitle ? '' : 'none';
+    });
+}
+</script> 

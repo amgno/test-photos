@@ -1,6 +1,6 @@
 title: Photo Portfolio
-baseurl: "a.magno.me/photos"
-url: "https://a.magno.me/photos"
+baseurl: "/photos"
+url: "https://yourusername.github.io"
 
 # Build settings
 markdown: kramdown
@@ -9,11 +9,19 @@ markdown: kramdown
 collections:
   works:
     output: true
-    permalink: /works/:path/
+    permalink: /:collection/:title/
+
+defaults:
+  - scope:
+      path: ""
+      type: "works"
+    values:
+      layout: "work"
 
 # Exclude files from processing
 exclude:
   - Gemfile
   - Gemfile.lock
   - node_modules
-  - vendor 
+  - vendor
+  - README.md
