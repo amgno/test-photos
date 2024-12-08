@@ -6,7 +6,7 @@
 }
 
 body {
-    background: #4c4c4c;
+    background: #ffffff;
     color: #000;
     overflow-x: hidden;
 }
@@ -19,7 +19,6 @@ body {
 .main-content {
     display: flex;
     width: 100%;
-    transition: width 0.3s ease;
 }
 
 .main-content.gallery-open {
@@ -30,6 +29,10 @@ body {
     width: 200px;
     padding: 1.5rem;
     flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 1001;
 }
 
 .content {
@@ -40,58 +43,86 @@ body {
 }
 
 .gallery-view {
-    width: 75%;
+    width: calc(100% - 200px);
     height: 100vh;
     position: fixed;
     top: 0;
-    right: -75%;
+    right: 0;
     background: white;
-    transition: right 0.3s ease;
-    border-left: 1px solid #eee;
-    overflow-y: auto;
-    scroll-snap-type: y mandatory;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+    overflow-x: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+}
+
+.photo-grid {
+    display: flex;
+    height: 100%;
+    width: fit-content;
 }
 
 .gallery-view.active {
-    right: 0;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .gallery-view .photo-item {
     height: 100vh;
+    width: calc(100vw - 200px);
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px;
+    position: relative;
     scroll-snap-align: start;
     scroll-snap-stop: always;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
 }
 
 .gallery-view .photo-item img {
-    max-width: 100%;
-    max-height: 100%;
+    max-width: calc(100% - 80px);
+    max-height: calc(80vh - 80px);
     object-fit: contain;
+    margin-bottom: 20px;
+}
+
+.photo-info {
+    position: static;
+    margin-top: 0;
+    text-align: left;
+    width: calc(100% - 80px);
+    align-self: center;
+}
+
+.photo-info .location {
+    font-weight: normal;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.photo-info .year {
+    color: #666;
+    font-size: 0.9rem;
 }
 
 .gallery-header {
     position: fixed;
-    top: 0;
-    right: 0;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    z-index: 1000;
-    cursor: pointer;
+    top: 40px;
+    right: 40px;
+    z-index: 1001;
 }
 
 .close-button {
     font-size: 1.5rem;
-    color: #666;
+    color: #000;
     text-decoration: none;
     line-height: 1;
+    padding: 10px;
 }
 
 h1 {
@@ -153,7 +184,7 @@ select {
 .works-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
 .work-row {
@@ -184,8 +215,8 @@ select {
     }
     
     .sidebar {
+        position: static;
         width: 100%;
-        padding: 1rem;
     }
     
     .content {
@@ -196,7 +227,8 @@ select {
 
     .gallery-view {
         width: 100%;
-        right: -100%;
+        overflow-x: auto;
+        overflow-y: hidden;
     }
 
     .main-content.gallery-open {
