@@ -18,39 +18,14 @@ title: Photo Portfolio
         <div class="filters">
             <select id="year-filter" onchange="filterWorks()">
                 <option value="">YEAR ▾</option>
-                {% assign image_files = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
-                {% assign years = image_files | map: "path" | map: "dirname" | uniq | map: "basename" | map: "first" | sort | reverse %}
-                {% for year in years %}
-                    {% if year.size == 4 and year contains "20" %}
-                        <option value="{{ year }}">{{ year }}</option>
-                    {% endif %}
-                {% endfor %}
             </select>
             <select id="title-filter" onchange="filterWorks()">
                 <option value="">TITLE ▾</option>
-                {% assign image_files = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
-                {% assign locations = image_files | map: "path" | map: "dirname" | uniq | map: "basename" | map: "last" | sort %}
-                {% for location in locations %}
-                    <option value="{{ location }}">{{ location }}</option>
-                {% endfor %}
             </select>
         </div>
 
         <div class="works-list">
-            {% assign image_files = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
-            {% assign folders = image_files | map: "path" | map: "dirname" | uniq | sort | reverse %}
-            
-            {% for folder in folders %}
-                {% assign parts = folder | split: "/" | last | split: "-" %}
-                {% if parts.size == 2 %}
-                    {% assign year = parts[0] %}
-                    {% assign location = parts[1] %}
-                    <div class="work-row" data-year="{{ year }}" data-title="{{ location }}" onclick="showGallery('{{ folder }}')">
-                        <span class="year">{{ year }}</span>
-                        <span class="title">{{ location }}</span>
-                    </div>
-                {% endif %}
-            {% endfor %}
+            <!-- Works will be populated by JavaScript -->
         </div>
     </main>
 
@@ -63,6 +38,82 @@ title: Photo Portfolio
 </div>
 
 <script>
+// Pre-generate the image data using Jekyll
+const imageData = {
+    folders: [
+        {% assign image_files = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
+        {% assign folders = image_files | map: "path" | map: "dirname" | uniq | sort | reverse %}
+        {% for folder in folders %}
+            {% assign parts = folder | split: "/" | last | split: "-" %}
+            {% if parts.size == 2 %}
+                {
+                    path: "{{ folder }}",
+                    year: "{{ parts[0] }}",
+                    location: "{{ parts[1] }}"
+                }{% unless forloop.last %},{% endunless %}
+            {% endif %}
+        {% endfor %}
+    ],
+    images: [
+        {% for file in image_files %}
+            {% assign ext = file.extname | downcase %}
+            {% if ext == '.jpg' or ext == '.jpeg' or ext == '.png' %}
+                {
+                    path: "{{ file.path }}",
+                    folder: "{{ file.path | split: '/' | reverse | drop: 1 | reverse | join: '/' }}"
+                }{% unless forloop.last %},{% endunless %}
+            {% endif %}
+        {% endfor %}
+    ]
+};
+
+// Populate filters
+function populateFilters() {
+    const yearFilter = document.getElementById('year-filter');
+    const titleFilter = document.getElementById('title-filter');
+    
+    // Get unique years and locations
+    const years = [...new Set(imageData.folders.map(f => f.year))].sort().reverse();
+    const locations = [...new Set(imageData.folders.map(f => f.location))].sort();
+    
+    // Populate year filter
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearFilter.appendChild(option);
+    });
+    
+    // Populate location filter
+    locations.forEach(location => {
+        const option = document.createElement('option');
+        option.value = location;
+        option.textContent = location;
+        titleFilter.appendChild(option);
+    });
+}
+
+// Display works
+function displayWorks() {
+    const worksList = document.querySelector('.works-list');
+    worksList.innerHTML = '';
+    
+    imageData.folders.forEach(folder => {
+        const workRow = document.createElement('div');
+        workRow.className = 'work-row';
+        workRow.dataset.year = folder.year;
+        workRow.dataset.title = folder.location;
+        workRow.onclick = () => showGallery(folder.path);
+        
+        workRow.innerHTML = `
+            <span class="year">${folder.year}</span>
+            <span class="title">${folder.location}</span>
+        `;
+        
+        worksList.appendChild(workRow);
+    });
+}
+
 function filterWorks() {
     const yearFilter = document.getElementById('year-filter').value;
     const titleFilter = document.getElementById('title-filter').value;
@@ -83,22 +134,11 @@ function showGallery(folderPath) {
     
     photoGrid.innerHTML = '';
     
-    // Get all images from the folder
-    {% assign all_images = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
-    const images = [
-        {% for image in all_images %}
-            {% assign ext = image.extname | downcase %}
-            {% if ext == '.jpg' or ext == '.jpeg' or ext == '.png' %}
-                {
-                    path: "{{ image.path }}",
-                    folder: "{{ image.path | split: '/' | reverse | drop: 1 | reverse | join: '/' }}"
-                },
-            {% endif %}
-        {% endfor %}
-    ].filter(img => img.folder === folderPath);
-
+    // Filter images for this folder
+    const folderImages = imageData.images.filter(img => img.folder === folderPath);
+    
     // Add images to gallery
-    images.forEach(image => {
+    folderImages.forEach(image => {
         const photoItem = document.createElement('div');
         photoItem.className = 'photo-item';
         photoItem.innerHTML = `<img src="{{ site.baseurl }}${image.path}" loading="lazy">`;
@@ -115,4 +155,8 @@ function hideGallery(event) {
     galleryView.classList.remove('active');
     document.body.style.overflow = '';
 }
+
+// Initialize
+populateFilters();
+displayWorks();
 </script> 
