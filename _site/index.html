@@ -225,16 +225,19 @@ function showGallery(folderPath) {
     
     // Add images to gallery and create thumbnails
     folderImages.forEach((image, index) => {
-        // Create main photo item
         const photoItem = document.createElement('div');
         photoItem.className = 'photo-item';
+        
         photoItem.innerHTML = `
-            <img src="/photos${image.path}" loading="lazy">
-            <div class="photo-info">
-                <div class="location">${folderInfo.location}</div>
-                <div class="year">${folderInfo.year}</div>
+            <div class="image-container">
+                <img src="/photos${image.path}" loading="lazy">
+                <div class="photo-info">
+                    <div class="location">${folderInfo.location}</div>
+                    <div class="year">${folderInfo.year}</div>
+                </div>
             </div>
         `;
+        
         photoGrid.appendChild(photoItem);
         
         // Create thumbnail
