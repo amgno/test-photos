@@ -53,36 +53,51 @@ title: Photo Portfolio
 <script>
 console.log('Starting script execution');
 
-// Pre-generate the image data using Jekyll
+// Get all image paths from Jekyll
+const imagePaths = [
+    {% for file in site.static_files %}
+        {% if file.path contains '/img/' %}
+            {{ file.path | jsonify }}{% unless forloop.last %},{% endunless %}
+        {% endif %}
+    {% endfor %}
+];
+
+console.log('Image paths:', imagePaths);
+
+// Process image data
 const imageData = {
-    folders: [
-        {% assign image_files = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
-        {% assign folders = image_files | map: "path" | map: "dirname" | uniq | sort | reverse %}
-        {% for folder in folders %}
-            {% assign parts = folder | split: "/" | last | split: "-" %}
-            {% if parts.size == 2 %}
-                {
-                    path: {{ folder | jsonify }},
-                    year: {{ parts[0] | jsonify }},
-                    location: {{ parts[1] | jsonify }}
-                }{% unless forloop.last %},{% endunless %}
-            {% endif %}
-        {% endfor %}
-    ],
-    images: [
-        {% for file in image_files %}
-            {% assign ext = file.extname | downcase %}
-            {% if ext == '.jpg' or ext == '.jpeg' or ext == '.png' %}
-                {
-                    path: {{ file.path | jsonify }},
-                    folder: {{ file.path | split: '/' | reverse | drop: 1 | reverse | join: '/' | jsonify }}
-                }{% unless forloop.last %},{% endunless %}
-            {% endif %}
-        {% endfor %}
-    ]
+    folders: [],
+    images: []
 };
 
-console.log('Image data:', imageData);
+// Process paths to extract folder information
+imagePaths.forEach(path => {
+    const parts = path.split('/');
+    if (parts.length >= 3) {
+        const folderName = parts[2]; // e.g., "2022-Milan"
+        const [year, location] = folderName.split('-');
+        
+        // Add to folders if not already present
+        if (!imageData.folders.some(f => f.path === `/img/${folderName}`)) {
+            imageData.folders.push({
+                path: `/img/${folderName}`,
+                year: year,
+                location: location
+            });
+        }
+        
+        // Add to images
+        imageData.images.push({
+            path: path,
+            folder: `/img/${folderName}`
+        });
+    }
+});
+
+// Sort folders by year (newest first)
+imageData.folders.sort((a, b) => b.year - a.year);
+
+console.log('Processed image data:', imageData);
 
 // Populate filters
 function populateFilters() {
