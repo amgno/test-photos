@@ -170,6 +170,12 @@ function showGallery(folderPath) {
     console.log('Showing gallery for:', folderPath);
     const galleryView = document.querySelector('.gallery-view');
     const photoGrid = galleryView.querySelector('.photo-grid');
+    const sidebar = document.querySelector('.sidebar');
+    
+    // Hide sidebar on mobile
+    if (window.innerWidth <= 768) {
+        sidebar.style.display = 'none';
+    }
     
     photoGrid.innerHTML = '';
     
@@ -238,12 +244,35 @@ function hideGallery(event) {
     }
     const galleryView = document.querySelector('.gallery-view');
     const thumbnailNav = galleryView.querySelector('.thumbnail-nav');
+    const sidebar = document.querySelector('.sidebar');
+    
+    // Show sidebar again on mobile
+    if (window.innerWidth <= 768) {
+        sidebar.style.display = '';
+    }
+    
     if (thumbnailNav) {
         thumbnailNav.remove();
     }
     galleryView.classList.remove('active');
     document.body.style.overflow = '';
 }
+
+// Add resize handler to handle orientation changes
+window.addEventListener('resize', () => {
+    const galleryView = document.querySelector('.gallery-view');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (window.innerWidth <= 768) {
+        if (galleryView.classList.contains('active')) {
+            sidebar.style.display = 'none';
+        } else {
+            sidebar.style.display = '';
+        }
+    } else {
+        sidebar.style.display = '';
+    }
+});
 
 // Initialize
 console.log('Initializing application');
