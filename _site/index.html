@@ -218,10 +218,14 @@ function showGallery(folderPath) {
     
     // Filter images for this folder
     const folderImages = imageData.images.filter(img => img.folder === folderPath);
-    console.log('Images found for folder:', folderImages);
     
-    // Add images to gallery
-    folderImages.forEach(image => {
+    // Create thumbnail navigation
+    const thumbnailNav = document.createElement('div');
+    thumbnailNav.className = 'thumbnail-nav';
+    
+    // Add images to gallery and create thumbnails
+    folderImages.forEach((image, index) => {
+        // Create main photo item
         const photoItem = document.createElement('div');
         photoItem.className = 'photo-item';
         photoItem.innerHTML = `
@@ -232,6 +236,33 @@ function showGallery(folderPath) {
             </div>
         `;
         photoGrid.appendChild(photoItem);
+        
+        // Create thumbnail
+        const thumbnail = document.createElement('div');
+        thumbnail.className = 'thumbnail';
+        thumbnail.innerHTML = `<img src="/photos${image.path}" loading="lazy">`;
+        thumbnail.onclick = () => {
+            const offset = index * (window.innerWidth - 200);
+            galleryView.scrollTo({
+                left: offset,
+                behavior: 'smooth'
+            });
+        };
+        thumbnailNav.appendChild(thumbnail);
+    });
+    
+    // Add thumbnail navigation to gallery view
+    galleryView.appendChild(thumbnailNav);
+    
+    // Update active thumbnail on scroll
+    galleryView.addEventListener('scroll', () => {
+        const scrollPosition = galleryView.scrollLeft;
+        const itemWidth = window.innerWidth - 200;
+        const activeIndex = Math.round(scrollPosition / itemWidth);
+        
+        document.querySelectorAll('.thumbnail').forEach((thumb, index) => {
+            thumb.classList.toggle('active', index === activeIndex);
+        });
     });
 
     galleryView.classList.add('active');
@@ -242,8 +273,11 @@ function hideGallery(event) {
     if (event) {
         event.preventDefault();
     }
-    console.log('Hiding gallery');
     const galleryView = document.querySelector('.gallery-view');
+    const thumbnailNav = galleryView.querySelector('.thumbnail-nav');
+    if (thumbnailNav) {
+        thumbnailNav.remove();
+    }
     galleryView.classList.remove('active');
     document.body.style.overflow = '';
 }

@@ -236,4 +236,37 @@ select {
     .main-content.gallery-open {
         width: 100%;
     }
+}
+
+/* New styles for thumbnail navigation */
+.thumbnail-nav {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    z-index: 1002;
+}
+
+.thumbnail {
+    width: 60px;
+    height: 40px;
+    background: #f0f0f0;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumbnail.active {
+    opacity: 1;
 } 
