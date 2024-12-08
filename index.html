@@ -16,29 +16,40 @@ title: Photo Portfolio
     </nav>
     <main class="content">
         <div class="filters">
-            <select id="year-filter">
+            <select id="year-filter" onchange="filterWorks()">
                 <option value="">YEAR ▾</option>
-                {% assign years = site.photos | map: "year" | uniq | sort | reverse %}
+                {% assign image_files = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
+                {% assign years = image_files | map: "path" | map: "dirname" | uniq | map: "basename" | map: "first" | sort | reverse %}
                 {% for year in years %}
-                    <option value="{{ year }}">{{ year }}</option>
+                    {% if year.size == 4 and year contains "20" %}
+                        <option value="{{ year }}">{{ year }}</option>
+                    {% endif %}
                 {% endfor %}
             </select>
-            <select id="title-filter">
+            <select id="title-filter" onchange="filterWorks()">
                 <option value="">TITLE ▾</option>
-                {% assign titles = site.photos | map: "title" | uniq | sort %}
-                {% for title in titles %}
-                    <option value="{{ title }}">{{ title }}</option>
+                {% assign image_files = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
+                {% assign locations = image_files | map: "path" | map: "dirname" | uniq | map: "basename" | map: "last" | sort %}
+                {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="works-list">
-            {% assign sorted_photos = site.photos | sort: "date" | reverse %}
-            {% for photo in sorted_photos %}
-                <div class="work-row" data-year="{{ photo.year }}" data-title="{{ photo.title }}" onclick="showGallery('{{ photo.url }}')">
-                    <span class="year">{{ photo.year }}</span>
-                    <span class="title">{{ photo.title }}</span>
-                </div>
+            {% assign image_files = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
+            {% assign folders = image_files | map: "path" | map: "dirname" | uniq | sort | reverse %}
+            
+            {% for folder in folders %}
+                {% assign parts = folder | split: "/" | last | split: "-" %}
+                {% if parts.size == 2 %}
+                    {% assign year = parts[0] %}
+                    {% assign location = parts[1] %}
+                    <div class="work-row" data-year="{{ year }}" data-title="{{ location }}" onclick="showGallery('{{ folder }}')">
+                        <span class="year">{{ year }}</span>
+                        <span class="title">{{ location }}</span>
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
     </main>
@@ -66,29 +77,36 @@ function filterWorks() {
     });
 }
 
-function showGallery(url) {
+function showGallery(folderPath) {
     const galleryView = document.querySelector('.gallery-view');
     const photoGrid = galleryView.querySelector('.photo-grid');
     
-    // Load gallery content
-    fetch(url)
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const images = doc.querySelectorAll('.photo-grid img');
-            
-            photoGrid.innerHTML = '';
-            images.forEach(img => {
-                const photoItem = document.createElement('div');
-                photoItem.className = 'photo-item';
-                photoItem.innerHTML = `<img src="${img.src}" alt="${img.alt}" loading="lazy">`;
-                photoGrid.appendChild(photoItem);
-            });
-            
-            galleryView.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
+    photoGrid.innerHTML = '';
+    
+    // Get all images from the folder
+    {% assign all_images = site.static_files | where_exp: "file", "file.path contains '/img/'" %}
+    const images = [
+        {% for image in all_images %}
+            {% assign ext = image.extname | downcase %}
+            {% if ext == '.jpg' or ext == '.jpeg' or ext == '.png' %}
+                {
+                    path: "{{ image.path }}",
+                    folder: "{{ image.path | split: '/' | reverse | drop: 1 | reverse | join: '/' }}"
+                },
+            {% endif %}
+        {% endfor %}
+    ].filter(img => img.folder === folderPath);
+
+    // Add images to gallery
+    images.forEach(image => {
+        const photoItem = document.createElement('div');
+        photoItem.className = 'photo-item';
+        photoItem.innerHTML = `<img src="{{ site.baseurl }}${image.path}" loading="lazy">`;
+        photoGrid.appendChild(photoItem);
+    });
+
+    galleryView.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function hideGallery(event) {
@@ -97,8 +115,4 @@ function hideGallery(event) {
     galleryView.classList.remove('active');
     document.body.style.overflow = '';
 }
-
-// Add event listeners
-document.getElementById('year-filter').addEventListener('change', filterWorks);
-document.getElementById('title-filter').addEventListener('change', filterWorks);
 </script> 
