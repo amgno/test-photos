@@ -18,29 +18,33 @@ body {
 
 .main-content {
     display: flex;
-    flex: 1;
-    min-width: 0; /* Prevent flex item from overflowing */
+    width: 100%;
+    transition: width 0.3s ease;
+}
+
+.main-content.gallery-open {
+    width: 25%; /* Takes 25% when gallery is open */
 }
 
 .sidebar {
-    width: 250px;
-    padding: 2rem;
+    width: 200px;
+    padding: 1.5rem;
     flex-shrink: 0;
 }
 
 .content {
     flex: 1;
-    padding: 2rem;
+    padding: 1.5rem;
     border-left: 1px solid #eee;
-    min-width: 0; /* Prevent flex item from overflowing */
+    min-width: 0;
 }
 
 .gallery-view {
-    width: 100%;
+    width: 75%;
     height: 100vh;
     position: fixed;
     top: 0;
-    right: -100%;
+    right: -75%;
     background: white;
     transition: right 0.3s ease;
     border-left: 1px solid #eee;
@@ -60,7 +64,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 1.5rem;
 }
 
 .gallery-view .photo-item img {
@@ -73,8 +77,8 @@ body {
     position: fixed;
     top: 0;
     right: 0;
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -84,21 +88,21 @@ body {
 }
 
 .close-button {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #666;
     text-decoration: none;
     line-height: 1;
 }
 
 h1 {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .nav-links {
     list-style: none;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .nav-links li {
@@ -135,7 +139,7 @@ h1 {
 .filters {
     display: flex;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 select {
@@ -191,6 +195,11 @@ select {
     }
 
     .gallery-view {
+        width: 100%;
+        right: -100%;
+    }
+
+    .main-content.gallery-open {
         width: 100%;
     }
 } 

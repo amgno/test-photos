@@ -172,6 +172,7 @@ function showGallery(folderPath) {
     console.log('Showing gallery for:', folderPath);
     const galleryView = document.querySelector('.gallery-view');
     const photoGrid = galleryView.querySelector('.photo-grid');
+    const mainContent = document.querySelector('.main-content');
     
     photoGrid.innerHTML = '';
     
@@ -188,6 +189,7 @@ function showGallery(folderPath) {
     });
 
     galleryView.classList.add('active');
+    mainContent.classList.add('gallery-open');
     document.body.style.overflow = 'hidden';
 }
 
@@ -195,7 +197,9 @@ function hideGallery(event) {
     event.preventDefault();
     console.log('Hiding gallery');
     const galleryView = document.querySelector('.gallery-view');
+    const mainContent = document.querySelector('.main-content');
     galleryView.classList.remove('active');
+    mainContent.classList.remove('gallery-open');
     document.body.style.overflow = '';
 }
 
