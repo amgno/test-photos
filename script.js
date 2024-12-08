@@ -1,94 +1,115 @@
-const galleryContainer = document.getElementById('main-gallery');
-const detailsContainer = document.createElement('div');
-detailsContainer.id = 'details-container';
-document.body.appendChild(detailsContainer);
+// Get DOM elements
+const worksList = document.querySelector('.works-list');
+const yearFilter = document.getElementById('year-filter');
+const titleFilter = document.getElementById('title-filter');
 
-function updateGallery(images) {
-    galleryContainer.innerHTML = '';
-    images.forEach((image, index) => {
-        const galleryElement = document.createElement('div');
-        galleryElement.classList.add('galleryelement');
+// Function to process directory name
+function processDirectoryName(dirname) {
+    const parts = dirname.split('-');
+    const year = parts[0];
+    const title = parts.slice(1).map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+    
+    return {
+        year: parseInt(year),
+        title: title,
+        dirname: dirname
+    };
+}
 
-        const xy2 = document.createElement('xy2');
-        xy2.innerHTML = `${index + 1}`;
-        galleryElement.appendChild(xy2);
+// Function to get works from directory structure
+function getWorks() {
+    // Get directories from the global variable
+    const directories = window.directoryStructure || [];
+    
+    // Convert to work objects
+    const works = directories.map(dirname => {
+        return processDirectoryName(dirname);
+    });
+    
+    return works.sort((a, b) => b.year - a.year);
+}
 
-        const img = document.createElement('img');
-        img.src = image.url;
-        img.alt = '';
-        img.classList.add('hoverImage');
-        galleryElement.appendChild(img);
+// Populate filters
+function populateFilters(works) {
+    // Clear existing options
+    yearFilter.innerHTML = '<option value="">YEAR ▾</option>';
+    titleFilter.innerHTML = '<option value="">TITLE ▾</option>';
 
-        galleryElement.addEventListener('click', function () {
-            showDetails(image);
+    // Get unique years and sort them
+    const years = [...new Set(works.map(work => work.year))].sort((a, b) => b - a);
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearFilter.appendChild(option);
+    });
+
+    // Get unique titles and sort them
+    const titles = [...new Set(works.map(work => work.title))].sort();
+    titles.forEach(title => {
+        const option = document.createElement('option');
+        option.value = title;
+        option.textContent = title;
+        titleFilter.appendChild(option);
+    });
+}
+
+// Display works
+function displayWorks(filteredWorks) {
+    worksList.innerHTML = '';
+    filteredWorks.forEach(work => {
+        const yearSpan = document.createElement('span');
+        yearSpan.className = 'year';
+        yearSpan.textContent = work.year;
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'title';
+        titleSpan.textContent = work.title;
+
+        // Make the row clickable
+        const row = document.createElement('div');
+        row.className = 'work-row';
+        row.appendChild(yearSpan);
+        row.appendChild(titleSpan);
+        
+        // Add click event to show directory contents
+        row.addEventListener('click', () => {
+            window.location.href = `img/${work.dirname}/index.html`;
         });
 
-        galleryContainer.appendChild(galleryElement);
+        worksList.appendChild(row);
     });
 }
 
-function showDetails(image) {
-    getImageColor(image.url).then(color => {
-        document.body.style.backgroundColor = color;
-    });
+// Filter works
+function filterWorks(works) {
+    const selectedYear = yearFilter.value;
+    const selectedTitle = titleFilter.value;
+    let filtered = works;
+    
+    if (selectedYear) {
+        filtered = filtered.filter(work => work.year === parseInt(selectedYear));
+    }
+    
+    if (selectedTitle) {
+        filtered = filtered.filter(work => work.title === selectedTitle);
+    }
 
-    detailsContainer.innerHTML = `
-        <div class="details-image">
-            <img src="${image.url}" alt="">
-        </div>
-        <div class="details-info">
-            <div>${image.shotWith}</div>
-            <div>${image.date}</div>
-            <div>${image.where}</div>
-        </div>
-    `;
-    detailsContainer.style.display = 'block';
+    displayWorks(filtered);
 }
 
-function getImageColor(imageUrl) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous'; // Ensure the image can be accessed from the canvas
-        img.src = imageUrl;
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+// Initialize the page
+function initialize() {
+    const works = getWorks();
+    populateFilters(works);
+    displayWorks(works);
 
-        img.onload = function () {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0, img.width, img.height);
-
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-
-            let r = 0, g = 0, b = 0;
-
-            for (let i = 0; i < data.length; i += 4) {
-                r += data[i];
-                g += data[i + 1];
-                b += data[i + 2];
-            }
-
-            r = Math.floor(r / (data.length / 4));
-            g = Math.floor(g / (data.length / 4));
-            b = Math.floor(b / (data.length / 4));
-
-            resolve(`rgb(${r}, ${g}, ${b})`);
-        };
-
-        img.onerror = function () {
-            reject(new Error('Failed to load image'));
-        };
-    });
+    // Event listeners
+    yearFilter.addEventListener('change', () => filterWorks(works));
+    titleFilter.addEventListener('change', () => filterWorks(works));
 }
 
-function sortImagesByDate(images) {
-    return images.sort((a, b) => new Date(b.date.split(' ').reverse().join('-')) - new Date(a.date.split(' ').reverse().join('-')));
-}
-
-document.getElementById('filter').addEventListener('click', function () {
-    const sortedImages = sortImagesByDate(images);
-    updateGallery(sortedImages);
-});
-
-updateGallery(images);
+// Start the application
+initialize(); 

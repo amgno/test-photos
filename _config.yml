@@ -1,0 +1,19 @@
+title: Photo Portfolio
+baseurl: "a.magno.me/photos"
+url: "https://a.magno.me/photos"
+
+# Build settings
+markdown: kramdown
+
+# Collections
+collections:
+  works:
+    output: true
+    permalink: /works/:path/
+
+# Exclude files from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor 

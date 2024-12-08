@@ -1,24 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <script src="photos.js"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photos</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div id="nav">
-        <xy>Photos</xy>
-        <div>
-            <xy style="font-style: italic;">Filter</xy><br>
-            <xy id="filter">Date</xy><br>
-            <!-- <xy id="filter">Type</xy> -->
+---
+layout: default
+title: Photo Portfolio
+---
+
+<div class="container">
+    <nav class="sidebar">
+        <h1>PHOTOS</h1>
+        <ul class="nav-links">
+            <li><a href="#" class="active">LIST</a></li>
+            <li><a href="portfolio.html">PORTFOLIO</a></li>
+        </ul>
+        <div class="language-switch">
+            <a href="#" class="active">EN</a> / <a href="#">DE</a>
         </div>
-        
-        <xy>AM</xy>
-    </div>
-    <div id="main-gallery"></div>
-    <script src="script.js"></script>
-</body>
-</html>
+    </nav>
+    <main class="content">
+        <div class="filters">
+            <select id="year-filter">
+                <option value="">YEAR ▾</option>
+            </select>
+            <select id="title-filter">
+                <option value="">TITLE ▾</option>
+            </select>
+        </div>
+        <div class="works-list">
+            <!-- Works will be populated by JavaScript -->
+        </div>
+    </main>
+</div>
+
+<script>
+    // Generate directory structure from Jekyll collections
+    window.directoryStructure = [
+        {% for work in site.works %}
+            "{{ work.path | split: '/' | last | split: '.' | first }}"{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+    ];
+</script>
+<script src="{{ '/assets/js/script.js' | relative_url }}"></script> 
