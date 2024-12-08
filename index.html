@@ -3,6 +3,19 @@ layout: default
 title: Photo Portfolio
 ---
 
+<!-- Debug output -->
+<div style="padding: 20px; background: #f5f5f5; font-family: monospace; font-size: 12px; margin-bottom: 20px;">
+    <h3>Debug Info:</h3>
+    <p>Static Files in /img:</p>
+    <ul>
+    {% for file in site.static_files %}
+        {% if file.path contains '/img/' %}
+            <li>{{ file.path }}</li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+</div>
+
 <div class="container">
     <nav class="sidebar">
         <h1>PHOTOS</h1>
@@ -38,6 +51,8 @@ title: Photo Portfolio
 </div>
 
 <script>
+console.log('Starting script execution');
+
 // Pre-generate the image data using Jekyll
 const imageData = {
     folders: [
@@ -47,9 +62,9 @@ const imageData = {
             {% assign parts = folder | split: "/" | last | split: "-" %}
             {% if parts.size == 2 %}
                 {
-                    path: "{{ folder }}",
-                    year: "{{ parts[0] }}",
-                    location: "{{ parts[1] }}"
+                    path: {{ folder | jsonify }},
+                    year: {{ parts[0] | jsonify }},
+                    location: {{ parts[1] | jsonify }}
                 }{% unless forloop.last %},{% endunless %}
             {% endif %}
         {% endfor %}
@@ -59,22 +74,28 @@ const imageData = {
             {% assign ext = file.extname | downcase %}
             {% if ext == '.jpg' or ext == '.jpeg' or ext == '.png' %}
                 {
-                    path: "{{ file.path }}",
-                    folder: "{{ file.path | split: '/' | reverse | drop: 1 | reverse | join: '/' }}"
+                    path: {{ file.path | jsonify }},
+                    folder: {{ file.path | split: '/' | reverse | drop: 1 | reverse | join: '/' | jsonify }}
                 }{% unless forloop.last %},{% endunless %}
             {% endif %}
         {% endfor %}
     ]
 };
 
+console.log('Image data:', imageData);
+
 // Populate filters
 function populateFilters() {
+    console.log('Populating filters');
     const yearFilter = document.getElementById('year-filter');
     const titleFilter = document.getElementById('title-filter');
     
     // Get unique years and locations
     const years = [...new Set(imageData.folders.map(f => f.year))].sort().reverse();
     const locations = [...new Set(imageData.folders.map(f => f.location))].sort();
+    
+    console.log('Years found:', years);
+    console.log('Locations found:', locations);
     
     // Populate year filter
     years.forEach(year => {
@@ -95,8 +116,11 @@ function populateFilters() {
 
 // Display works
 function displayWorks() {
+    console.log('Displaying works');
     const worksList = document.querySelector('.works-list');
     worksList.innerHTML = '';
+    
+    console.log('Folders to display:', imageData.folders);
     
     imageData.folders.forEach(folder => {
         const workRow = document.createElement('div');
@@ -115,6 +139,7 @@ function displayWorks() {
 }
 
 function filterWorks() {
+    console.log('Filtering works');
     const yearFilter = document.getElementById('year-filter').value;
     const titleFilter = document.getElementById('title-filter').value;
     const works = document.querySelectorAll('.work-row');
@@ -129,6 +154,7 @@ function filterWorks() {
 }
 
 function showGallery(folderPath) {
+    console.log('Showing gallery for:', folderPath);
     const galleryView = document.querySelector('.gallery-view');
     const photoGrid = galleryView.querySelector('.photo-grid');
     
@@ -136,6 +162,7 @@ function showGallery(folderPath) {
     
     // Filter images for this folder
     const folderImages = imageData.images.filter(img => img.folder === folderPath);
+    console.log('Images found for folder:', folderImages);
     
     // Add images to gallery
     folderImages.forEach(image => {
@@ -151,12 +178,14 @@ function showGallery(folderPath) {
 
 function hideGallery(event) {
     event.preventDefault();
+    console.log('Hiding gallery');
     const galleryView = document.querySelector('.gallery-view');
     galleryView.classList.remove('active');
     document.body.style.overflow = '';
 }
 
 // Initialize
+console.log('Initializing application');
 populateFilters();
 displayWorks();
 </script> 
