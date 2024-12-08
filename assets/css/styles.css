@@ -17,7 +17,7 @@ body {
     display: flex;
     min-height: 100vh;
     margin-top: 100px;
-    margin-left: 100px;
+    margin-left: 50px;
 }
 
 .main-content {
@@ -282,27 +282,37 @@ select:disabled {
     }
 }
 
-/* New styles for thumbnail navigation */
+/* Thumbnail navigation styles */
 .thumbnail-nav {
     position: fixed;
     bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 10px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 4px;
+    gap: 12px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.95);
     z-index: 1002;
+    overflow-x: auto;
+    max-width: 80vw;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.thumbnail-nav::-webkit-scrollbar {
+    display: none;
 }
 
 .thumbnail {
-    width: 60px;
-    height: 40px;
-    background: #f0f0f0;
+    width: 80px;
+    height: 60px;
     cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.2s;
+    position: relative;
+    flex: 0 0 auto;
+    transition: transform 0.5s ease, opacity 0.3s ease;
+    opacity: 0.5;
 }
 
 .thumbnail img {
@@ -312,5 +322,24 @@ select:disabled {
 }
 
 .thumbnail.active {
+    transform: translateY(-8px);
     opacity: 1;
+}
+
+/* Wave effect towards active thumbnail */
+.thumbnail.before-active {
+    transform: translateY(-4px);
+    opacity: 0.7;
+}
+
+.thumbnail.after-active {
+    transform: translateY(-4px);
+    opacity: 0.7;
+}
+
+/* Second level neighbors */
+.thumbnail.before-active ~ .thumbnail.before-active,
+.thumbnail.after-active ~ .thumbnail.after-active {
+    transform: translateY(-2px);
+    opacity: 0.6;
 }
