@@ -18,11 +18,35 @@
         
     
         
+            <li>/img/2024-Firenze/R0001036.jpg</li>
+        
+    
+        
+            <li>/img/2024-Firenze/R0001053.jpg</li>
+        
+    
+        
             <li>/img/2024-London/2024-London.PNG</li>
         
     
         
             <li>/img/2024-London/R0000536.PNG</li>
+        
+    
+        
+            <li>/img/2024-London/R0000547.jpg</li>
+        
+    
+        
+            <li>/img/2024-London/R0000608.jpg</li>
+        
+    
+        
+            <li>/img/2024-London/R0000655.jpg</li>
+        
+    
+        
+            <li>/img/2024-London/R0000662.jpg</li>
         
     
         
@@ -42,6 +66,14 @@
         
     
         
+            <li>/img/2024-London/R0000701.jpg</li>
+        
+    
+        
+            <li>/img/2024-London/R0000746.jpg</li>
+        
+    
+        
             <li>/img/2024-London/R0000774.PNG</li>
         
     
@@ -50,23 +82,39 @@
         
     
         
-            <li>/img/2024-Milan/R0000348.PNG</li>
+            <li>/img/2024-Milano/R0000348.PNG</li>
         
     
         
-            <li>/img/2024-Milan/R0000898.PNG</li>
+            <li>/img/2024-Milano/R0000370.jpg</li>
         
     
         
-            <li>/img/2024-Milan/R0000902.JPG</li>
+            <li>/img/2024-Milano/R0000898.PNG</li>
         
     
         
-            <li>/img/2024-Milan/R0000948.PNG</li>
+            <li>/img/2024-Milano/R0000899.jpg</li>
+        
+    
+        
+            <li>/img/2024-Milano/R0000902.JPG</li>
+        
+    
+        
+            <li>/img/2024-Milano/R0000948.PNG</li>
         
     
         
             <li>/img/2024-Monferrato/R0000910.JPG</li>
+        
+    
+        
+            <li>/img/2024-Monferrato/R0000932.jpg</li>
+        
+    
+        
+            <li>/img/2024-Sardegna/R0000018-2.jpg</li>
         
     
         
@@ -75,6 +123,10 @@
     
         
             <li>/img/2024-Sardegna/R0000181.JPG</li>
+        
+    
+        
+            <li>/img/2024-Sardegna/R0000194.jpg</li>
         
     
         
@@ -137,11 +189,35 @@ const imagePaths = [
         
     
         
+            "/img/2024-Firenze/R0001036.jpg",
+        
+    
+        
+            "/img/2024-Firenze/R0001053.jpg",
+        
+    
+        
             "/img/2024-London/2024-London.PNG",
         
     
         
             "/img/2024-London/R0000536.PNG",
+        
+    
+        
+            "/img/2024-London/R0000547.jpg",
+        
+    
+        
+            "/img/2024-London/R0000608.jpg",
+        
+    
+        
+            "/img/2024-London/R0000655.jpg",
+        
+    
+        
+            "/img/2024-London/R0000662.jpg",
         
     
         
@@ -161,6 +237,14 @@ const imagePaths = [
         
     
         
+            "/img/2024-London/R0000701.jpg",
+        
+    
+        
+            "/img/2024-London/R0000746.jpg",
+        
+    
+        
             "/img/2024-London/R0000774.PNG",
         
     
@@ -169,23 +253,39 @@ const imagePaths = [
         
     
         
-            "/img/2024-Milan/R0000348.PNG",
+            "/img/2024-Milano/R0000348.PNG",
         
     
         
-            "/img/2024-Milan/R0000898.PNG",
+            "/img/2024-Milano/R0000370.jpg",
         
     
         
-            "/img/2024-Milan/R0000902.JPG",
+            "/img/2024-Milano/R0000898.PNG",
         
     
         
-            "/img/2024-Milan/R0000948.PNG",
+            "/img/2024-Milano/R0000899.jpg",
+        
+    
+        
+            "/img/2024-Milano/R0000902.JPG",
+        
+    
+        
+            "/img/2024-Milano/R0000948.PNG",
         
     
         
             "/img/2024-Monferrato/R0000910.JPG",
+        
+    
+        
+            "/img/2024-Monferrato/R0000932.jpg",
+        
+    
+        
+            "/img/2024-Sardegna/R0000018-2.jpg",
         
     
         
@@ -194,6 +294,10 @@ const imagePaths = [
     
         
             "/img/2024-Sardegna/R0000181.JPG",
+        
+    
+        
+            "/img/2024-Sardegna/R0000194.jpg",
         
     
         
@@ -375,15 +479,16 @@ function showGallery(folderPath) {
     // Add thumbnail navigation to gallery view
     galleryView.appendChild(thumbnailNav);
     
-    // Update active thumbnail on scroll
-    galleryView.addEventListener('scroll', () => {
-        const scrollPosition = galleryView.scrollLeft;
-        const itemWidth = window.innerWidth - 200;
-        const activeIndex = Math.round(scrollPosition / itemWidth);
-        
-        document.querySelectorAll('.thumbnail').forEach((thumb, index) => {
-            thumb.classList.toggle('active', index === activeIndex);
-        });
+    // Update the timeout to 1 second
+    let navTimeout;
+    const hideNav = () => {
+        thumbnailNav.style.opacity = '0';
+    };
+
+    galleryView.addEventListener('mousemove', () => {
+        thumbnailNav.style.opacity = '1';
+        clearTimeout(navTimeout);
+        navTimeout = setTimeout(hideNav, 1000);
     });
 
     galleryView.classList.add('active');
@@ -437,6 +542,18 @@ document.addEventListener('keydown', function(event) {
         const galleryView = document.querySelector('.gallery-view');
         if (galleryView.classList.contains('active')) {
             hideGallery(event);
+        }
+    }
+});
+
+// Add this after your existing keydown listener
+document.addEventListener('keydown', function(event) {
+    const galleryView = document.querySelector('.gallery-view');
+    if (galleryView.classList.contains('active')) {
+        if (event.key === 'ArrowLeft') {
+            galleryView.querySelector('.gallery-nav-arrow.prev').click();
+        } else if (event.key === 'ArrowRight') {
+            galleryView.querySelector('.gallery-nav-arrow.next').click();
         }
     }
 });

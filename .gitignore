@@ -3,11 +3,28 @@
 Thumbs.db
 desktop.ini
 
+# Jekyll specific
 .jekyll-cache/
 .jekyll-cache/*
 ._site/
 _site/*
+.jekyll-metadata
+.sass-cache/
+vendor/
+.bundle/
 
+# Docker
+.docker/
+docker-compose.override.yml
+*.env
+.env.*
+!.env.example
+
+# Ruby
+*.gem
+.ruby-version
+.ruby-gemset
+Gemfile.lock
 
 # Editor and IDE files
 .vscode/

@@ -223,15 +223,16 @@ function showGallery(folderPath) {
     // Add thumbnail navigation to gallery view
     galleryView.appendChild(thumbnailNav);
     
-    // Update active thumbnail on scroll
-    galleryView.addEventListener('scroll', () => {
-        const scrollPosition = galleryView.scrollLeft;
-        const itemWidth = window.innerWidth - 200;
-        const activeIndex = Math.round(scrollPosition / itemWidth);
-        
-        document.querySelectorAll('.thumbnail').forEach((thumb, index) => {
-            thumb.classList.toggle('active', index === activeIndex);
-        });
+    // Update the timeout to 1 second
+    let navTimeout;
+    const hideNav = () => {
+        thumbnailNav.style.opacity = '0';
+    };
+
+    galleryView.addEventListener('mousemove', () => {
+        thumbnailNav.style.opacity = '1';
+        clearTimeout(navTimeout);
+        navTimeout = setTimeout(hideNav, 1000);
     });
 
     galleryView.classList.add('active');
@@ -285,6 +286,18 @@ document.addEventListener('keydown', function(event) {
         const galleryView = document.querySelector('.gallery-view');
         if (galleryView.classList.contains('active')) {
             hideGallery(event);
+        }
+    }
+});
+
+// Add this after your existing keydown listener
+document.addEventListener('keydown', function(event) {
+    const galleryView = document.querySelector('.gallery-view');
+    if (galleryView.classList.contains('active')) {
+        if (event.key === 'ArrowLeft') {
+            galleryView.querySelector('.gallery-nav-arrow.prev').click();
+        } else if (event.key === 'ArrowRight') {
+            galleryView.querySelector('.gallery-nav-arrow.next').click();
         }
     }
 });
