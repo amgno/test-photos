@@ -518,6 +518,19 @@ function filterWorks() {
 function showGallery(folderPath) {
     console.log('Showing gallery for:', folderPath);
     const galleryView = document.querySelector('.gallery-view');
+    
+    // Add loading overlay if it doesn't exist
+    let loadingOverlay = document.querySelector('.loading-overlay');
+    if (!loadingOverlay) {
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.innerHTML = '<div class="loading-spinner"></div>';
+        document.body.appendChild(loadingOverlay);
+    }
+    
+    // Show loading overlay
+    loadingOverlay.classList.add('active');
+    
     const photoGrid = galleryView.querySelector('.photo-grid');
     const sidebar = document.querySelector('.sidebar');
     
@@ -530,12 +543,28 @@ function showGallery(folderPath) {
     const folderInfo = imageData.folders.find(f => f.path === folderPath);
     const folderImages = imageData.images.filter(img => img.folder === folderPath);
     
+    // Track loading progress
+    let loadedImages = 0;
+    const totalImages = folderImages.length;
+    
+    const checkAllImagesLoaded = () => {
+        loadedImages++;
+        if (loadedImages === totalImages * 2) { // Main images + thumbnails
+            loadingOverlay.classList.remove('active');
+        }
+    };
+    
     const thumbnailNav = document.createElement('div');
     thumbnailNav.className = 'thumbnail-nav';
     
     folderImages.forEach((image, index) => {
         const photoItem = document.createElement('div');
         photoItem.className = 'photo-item';
+        
+        // Create and track main image loading
+        const mainImg = new Image();
+        mainImg.onload = checkAllImagesLoaded;
+        mainImg.src = `/photos${image.path}`;
         
         photoItem.innerHTML = `
             <div class="image-wrapper">
@@ -548,6 +577,11 @@ function showGallery(folderPath) {
         `;
         
         photoGrid.appendChild(photoItem);
+        
+        // Create and track thumbnail loading
+        const thumbImg = new Image();
+        thumbImg.onload = checkAllImagesLoaded;
+        thumbImg.src = `/photos${image.path}`;
         
         const thumbnail = document.createElement('div');
         thumbnail.className = 'thumbnail';
@@ -841,6 +875,41 @@ document.addEventListener('keydown', function(event) {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 </style> 
 </body>
