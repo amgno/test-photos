@@ -184,6 +184,9 @@ h1 {
     margin-bottom: 1.5rem;
 }
 
+.filters select {
+}
+
 select {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -235,6 +238,7 @@ select:disabled {
 }
 
 .works-list {
+    width: 500px;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;

@@ -28,10 +28,15 @@ title: Photos
     <main class="content">
         <div class="filters">
             <select id="year-filter" onchange="filterWorks()">
-                <option value="">YEAR ▾</option>
+                <option value="">YEAR</option>
             </select>
             <select id="title-filter" onchange="filterWorks()">
-                <option value="">TITLE ▾</option>
+                <option value="">TITLE</option>
+            </select>
+            <select id="sort-filter" onchange="filterAndSortWorks()">
+                <option value="newest">NEWEST FIRST</option>
+                <option value="oldest">OLDEST FIRST</option>
+                <option value="title">A-Z</option>
             </select>
         </div>
 
@@ -72,14 +77,15 @@ const imageData = {
 imagePaths.forEach(path => {
     const parts = path.split('/');
     if (parts.length >= 3) {
-        const folderName = parts[2]; // e.g., "2022-Milan"
-        const [year, location] = folderName.split('-');
+        const folderName = parts[2]; // e.g., "2024-12-Milan"
+        const [year, month, location] = folderName.split('-');
         
         // Add to folders if not already present
         if (!imageData.folders.some(f => f.path === `/img/${folderName}`)) {
             imageData.folders.push({
                 path: `/img/${folderName}`,
                 year: year,
+                month: month,
                 location: location
             });
         }
@@ -92,10 +98,17 @@ imagePaths.forEach(path => {
     }
 });
 
-// Sort folders by year (newest first)
-imageData.folders.sort((a, b) => b.year - a.year);
+// Sort folders by year and month (newest first)
+imageData.folders.sort((a, b) => {
+    // Compare years first
+    const yearDiff = parseInt(b.year) - parseInt(a.year);
+    if (yearDiff !== 0) return yearDiff;
+    
+    // If years are equal, compare months
+    return parseInt(b.month) - parseInt(a.month);
+});
 
-console.log('Processed image data:', imageData);
+console.log('Processed and sorted image data:', imageData);
 
 // Populate filters
 function populateFilters() {
@@ -135,28 +148,48 @@ function displayWorks() {
     
     console.log('Folders to display:', imageData.folders);
     
+    const monthNames = {
+        '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr',
+        '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Aug',
+        '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec'
+    };
+    
     imageData.folders.forEach(folder => {
         const workRow = document.createElement('div');
         workRow.className = 'work-row';
         workRow.dataset.year = folder.year;
+        workRow.dataset.month = folder.month;
         workRow.dataset.title = folder.location;
         workRow.onclick = () => showGallery(folder.path);
         
+        const monthName = monthNames[folder.month] || folder.month;
+        
         workRow.innerHTML = `
-            <span class="year">${folder.year}</span>
             <span class="title">${folder.location}</span>
+            <span class="month-year">
+                <em>${monthName}</em>
+                <span class="year">${folder.year}</span>
+            </span>
         `;
         
         worksList.appendChild(workRow);
     });
+    
+    // Apply initial sorting
+    filterAndSortWorks();
 }
 
-function filterWorks() {
-    console.log('Filtering works');
+function filterAndSortWorks() {
+    console.log('Filtering and sorting works');
     const yearFilter = document.getElementById('year-filter').value;
     const titleFilter = document.getElementById('title-filter').value;
-    const works = document.querySelectorAll('.work-row');
+    const sortFilter = document.getElementById('sort-filter').value;
+    const worksList = document.querySelector('.works-list');
+    
+    // Convert NodeList to Array for sorting
+    const works = Array.from(document.querySelectorAll('.work-row'));
 
+    // First apply filters
     works.forEach(work => {
         const year = work.dataset.year;
         const title = work.dataset.title;
@@ -164,6 +197,42 @@ function filterWorks() {
         const showTitle = !titleFilter || title === titleFilter;
         work.style.display = showYear && showTitle ? '' : 'none';
     });
+
+    // Then sort the visible works
+    works.sort((a, b) => {
+        const yearA = a.dataset.year;
+        const yearB = b.dataset.year;
+        const monthA = a.dataset.month;
+        const monthB = b.dataset.month;
+        const titleA = a.dataset.title.toLowerCase();
+        const titleB = b.dataset.title.toLowerCase();
+
+        switch(sortFilter) {
+            case 'oldest':
+                // Sort by year and month (oldest first)
+                const yearDiffOld = parseInt(yearA) - parseInt(yearB);
+                if (yearDiffOld !== 0) return yearDiffOld;
+                return parseInt(monthA) - parseInt(monthB);
+            
+            case 'title':
+                // Sort alphabetically by title
+                return titleA.localeCompare(titleB);
+            
+            case 'newest':
+            default:
+                // Sort by year and month (newest first)
+                const yearDiffNew = parseInt(yearB) - parseInt(yearA);
+                if (yearDiffNew !== 0) return yearDiffNew;
+                return parseInt(monthB) - parseInt(monthA);
+        }
+    });
+
+    // Reorder the DOM elements
+    works.forEach(work => worksList.appendChild(work));
+}
+
+function filterWorks() {
+    filterAndSortWorks();
 }
 
 function showGallery(folderPath) {
@@ -302,3 +371,58 @@ document.addEventListener('keydown', function(event) {
     }
 });
 </script> 
+
+<style>
+.work-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.work-row .title {
+    font-size: 16px;
+}
+
+.work-row .month-year {
+    text-align: right;
+}
+
+.work-row .month-year em {
+    font-style: italic;
+    margin-right: 5px;
+}
+
+.work-row .year {
+    color: #888;
+}
+
+.filters {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.filters select {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: white;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 120px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.filters select:hover {
+    border-color: #999;
+}
+
+.filters select:focus {
+    outline: none;
+    border-color: #666;
+}
+</style> 
