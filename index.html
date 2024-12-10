@@ -241,24 +241,18 @@ function showGallery(folderPath) {
     const photoGrid = galleryView.querySelector('.photo-grid');
     const sidebar = document.querySelector('.sidebar');
     
-    // Hide sidebar on mobile
     if (window.innerWidth <= 768) {
         sidebar.style.display = 'none';
     }
     
     photoGrid.innerHTML = '';
     
-    // Get folder info
     const folderInfo = imageData.folders.find(f => f.path === folderPath);
-    
-    // Filter images for this folder
     const folderImages = imageData.images.filter(img => img.folder === folderPath);
     
-    // Create thumbnail navigation
     const thumbnailNav = document.createElement('div');
     thumbnailNav.className = 'thumbnail-nav';
     
-    // Add images to gallery and create thumbnails
     folderImages.forEach((image, index) => {
         const photoItem = document.createElement('div');
         photoItem.className = 'photo-item';
@@ -275,24 +269,35 @@ function showGallery(folderPath) {
         
         photoGrid.appendChild(photoItem);
         
-        // Create thumbnail
         const thumbnail = document.createElement('div');
         thumbnail.className = 'thumbnail';
         thumbnail.innerHTML = `<img src="{{ site.baseurl }}${image.path}" loading="lazy">`;
+        thumbnail.dataset.index = index;
+        
         thumbnail.onclick = () => {
-            const offset = index * (window.innerWidth - 200);
-            galleryView.scrollTo({
+            const offset = index * window.innerWidth;
+            photoGrid.scrollTo({
                 left: offset,
                 behavior: 'smooth'
             });
+            updateThumbnails(index);
         };
         thumbnailNav.appendChild(thumbnail);
     });
     
-    // Add thumbnail navigation to gallery view
     galleryView.appendChild(thumbnailNav);
     
-    // Update the timeout to 1 second
+    photoGrid.addEventListener('scroll', () => {
+        const scrollPosition = photoGrid.scrollLeft;
+        const itemWidth = window.innerWidth;
+        const currentIndex = Math.round(scrollPosition / itemWidth);
+        if (currentIndex >= 0) {
+            updateThumbnails(currentIndex);
+        }
+    });
+    
+    updateThumbnails(0);
+    
     let navTimeout;
     const hideNav = () => {
         thumbnailNav.style.opacity = '0';
@@ -301,11 +306,64 @@ function showGallery(folderPath) {
     galleryView.addEventListener('mousemove', () => {
         thumbnailNav.style.opacity = '1';
         clearTimeout(navTimeout);
-        navTimeout = setTimeout(hideNav, 1000);
+        navTimeout = setTimeout(hideNav, 2000);
     });
 
     galleryView.classList.add('active');
     document.body.style.overflow = 'hidden';
+
+    // Add keyboard navigation
+    const handleKeydown = (event) => {
+        const totalPhotos = folderImages.length;
+        const currentIndex = Math.round(photoGrid.scrollLeft / window.innerWidth);
+
+        if (event.key === 'ArrowRight' && currentIndex < totalPhotos - 1) {
+            const nextIndex = currentIndex + 1;
+            photoGrid.scrollTo({
+                left: nextIndex * window.innerWidth,
+                behavior: 'smooth'
+            });
+            updateThumbnails(nextIndex);
+        } else if (event.key === 'ArrowLeft' && currentIndex > 0) {
+            const prevIndex = currentIndex - 1;
+            photoGrid.scrollTo({
+                left: prevIndex * window.innerWidth,
+                behavior: 'smooth'
+            });
+            updateThumbnails(prevIndex);
+        }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+
+    // Clean up event listener when gallery is closed
+    const originalHideGallery = hideGallery;
+    hideGallery = (event) => {
+        document.removeEventListener('keydown', handleKeydown);
+        originalHideGallery(event);
+    };
+}
+
+function updateThumbnails(activeIndex) {
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const thumbnailNav = document.querySelector('.thumbnail-nav');
+    
+    thumbnails.forEach((thumb) => thumb.classList.remove('active'));
+    
+    const activeThumbnail = thumbnails[activeIndex];
+    if (activeThumbnail) {
+        activeThumbnail.classList.add('active');
+        
+        const thumbnailWidth = 50;
+        const gap = 8;
+        const navWidth = thumbnailNav.offsetWidth;
+        const scrollPosition = (thumbnailWidth + gap) * activeIndex - (navWidth - thumbnailWidth) / 2;
+        
+        thumbnailNav.scrollTo({
+            left: scrollPosition,
+            behavior: 'smooth'
+        });
+    }
 }
 
 function hideGallery(event) {
@@ -430,5 +488,78 @@ document.addEventListener('keydown', function(event) {
     outline: none;
     border-color: #666;
     box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+}
+
+.thumbnail-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+    height: 60px;
+    width: 400px;
+    align-items: center;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+    mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+}
+
+.thumbnail-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.thumbnail {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    opacity: 0.5;
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.thumbnail.active {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.thumbnail:not(.active) {
+    transform: scale(0.9);
+}
+
+.photo-grid {
+    display: flex;
+    scroll-snap-type: x mandatory;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    width: 100%;
+}
+
+.photo-item {
+    scroll-snap-align: center;
+    width: 100vw;
+    flex-shrink: 0;
+}
+
+.gallery-view {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
 }
 </style> 
