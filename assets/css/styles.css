@@ -1,5 +1,7 @@
 ---
 ---
+
+
 * {
     margin: 0;
     padding: 0;
@@ -11,6 +13,7 @@ body {
     background: #ffffff;
     color: #000;
     overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 .container {
@@ -35,8 +38,19 @@ body {
     flex-shrink: 0;
     position: sticky;
     top: 0;
-    height: 100vh;
+    height: 90vh;
     z-index: 1001;
+    display: flex;
+    flex-direction: column;
+}
+
+.construction-notice {
+    font-style: italic;
+    color: #888;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-top: auto;
+    padding-top: 20px;
 }
 
 .content {
@@ -267,6 +281,8 @@ select:disabled {
 }
 
 @media (max-width: 768px) {
+
+
     .photo-info {
         bottom: -70px;
     }
@@ -274,15 +290,28 @@ select:disabled {
 
     .container {
         flex-direction: column;
+        margin-top: 0;
+        margin-left: 0;
     }
     
     .sidebar {
-        position: static;
         width: 100%;
         height: auto;
-        padding: 15px;
-        /* border-bottom: 1px solid #eee; */
-        transition: opacity 0.3s ease;
+        padding: 1rem;
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .construction-notice {
+        font-size: 0.75rem;
+        padding-top: 0;
+        padding-left: 20px;
+        margin-top: 0;
+        text-align: right;
+        max-width: 140px;
     }
 
     /* Hide sidebar when gallery is open on mobile */
@@ -330,6 +359,8 @@ select:disabled {
 
     .photo-info {
         padding: 15px 0;
+    }
+    .content {
     }
 }
 

@@ -18,12 +18,17 @@ title: Photos
 
 <div class="container">
     <nav class="sidebar">
-        <h1>A MAGNO</h1>
-        <ul class="nav-links">
-            <li><a href="{{ '/' | relative_url }}" class="active">PHOTOS LIST</a></li>
-            <li><a href="https://instagram.com/mggno">INSTAGRAM</a></li>
-            <li><a href="https://a.magno.me">PORTFOLIO</a></li>
-        </ul>
+        <div class="nav-section">
+            <h1>A MAGNO</h1>
+            <ul class="nav-links">
+                <li><a href="{{ '/' | relative_url }}" class="active">PHOTOS LIST</a></li>
+                <li><a href="https://instagram.com/mggno">INSTAGRAM</a></li>
+                <li><a href="https://a.magno.me">PORTFOLIO</a></li>
+            </ul>
+        </div>
+        <div class="construction-notice">
+            Archive in progress. A curated collection of moments, continuously evolving.
+        </div>
     </nav>
     <main class="content">
         <div class="filters">
@@ -491,9 +496,15 @@ document.addEventListener('keydown', function(event) {
 }
 
 .filters {
+    position: sticky;
+    top: 0;
+    background: white;
     margin-bottom: 20px;
     display: flex;
     gap: 15px;
+    padding-bottom: 15px;
+    z-index: 10;
+    overflow-x: scroll;
 }
 
 .filters select {
@@ -630,5 +641,121 @@ document.addEventListener('keydown', function(event) {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+.works-list {
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    height: 100%;
+    overflow-y: auto;
+}
+
+
+
+@media (max-width: 768px) {
+
+    .filters {
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 1rem;
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .nav-section {
+        flex: 1;
+    }
+
+    .construction-notice {
+        font-size: 0.75rem;
+        padding-top: 0;
+        padding-left: 20px;
+        margin-top: 0;
+        text-align: right;
+        max-width: 140px;
+    }
+
+    .works-list {
+    width: 80vw;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    height: 100%;
+    overflow-y: auto;
+}
+}
+
+/* For very small screens */
+@media (max-width: 380px) {
+    .photo-info {
+        bottom: 15px;
+        left: 15px;
+        padding: 6px 10px;
+    }
+
+    .photo-info .location {
+        font-size: 0.7rem;
+    }
+
+    .photo-info .year {
+        font-size: 0.65rem;
+    }
+}
+
+/* Add touch-specific improvements */
+@media (hover: none) {
+    .thumbnail-nav {
+        opacity: 1 !important;
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .gallery-view {
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+    }
+
+    .photo-item {
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
+    }
+}
+
+.construction-notice {
+    font-style: italic;
+    color: #888;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-top: auto;
+    padding-top: 20px;
+}
+
+
+
+.container {
+    display: flex;
+    height: calc(100vh - 100px);
+    overflow: hidden;
+}
+
+.content {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    position: relative;
+}
+
+@media (min-width: 769px) {
+    .construction-notice {
+        margin-top: auto;
+        padding-top: 20px;
+    }
 }
 </style> 
