@@ -55,7 +55,7 @@ body {
 
 .content {
     flex: 1;
-    padding: 1.5rem;
+    /* padding: 1.5rem; */
     /* border-left: 1px solid #eee; */
     min-width: 0;
 }
@@ -471,5 +471,93 @@ select:disabled {
     .thumbnail {
         width: 60px;
         height: 45px;
+    }
+}
+
+/* Toggle Button Styles */
+.view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.view-toggle svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Grid View Styles */
+.works-list.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2px;
+    width: 100%;
+    padding: 0;
+}
+
+.works-list.grid-view .work-row {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 0;
+    transition: opacity 0.2s ease;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    color: white;
+    justify-content: flex-end;
+}
+
+.works-list.grid-view .work-row::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    z-index: 1;
+}
+
+.works-list.grid-view .work-row:hover {
+    opacity: 0.95;
+}
+
+.works-list.grid-view .title {
+    font-size: 16px;
+    margin-bottom: 4px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 2;
+}
+
+.works-list.grid-view .month-year {
+    text-align: left;
+    font-size: 14px;
+    position: relative;
+    z-index: 2;
+}
+
+.works-list.grid-view .work-row .year {
+    color: rgba(255,255,255,0.5);
+}
+
+/* Responsive adjustments for grid view */
+@media (max-width: 768px) {
+    .works-list.grid-view {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1px;
+    }
+    
+    .works-list.grid-view .work-row {
+        height: 250px;
     }
 }

@@ -205,6 +205,22 @@
                 <option value="oldest">OLDEST FIRST</option>
                 <option value="title">A-Z</option>
             </select>
+            <button class="view-toggle" onclick="toggleView()">
+                <svg class="list-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3" y2="6"></line>
+                    <line x1="3" y1="12" x2="3" y2="12"></line>
+                    <line x1="3" y1="18" x2="3" y2="18"></line>
+                </svg>
+                <svg class="grid-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+            </button>
         </div>
 
         <div class="works-list">
@@ -480,11 +496,16 @@ function displayWorks() {
     };
     
     imageData.folders.forEach(folder => {
+        // Get the first image from this folder
+        const firstImage = imageData.images.find(img => img.folder === folder.path);
+        const backgroundImage = firstImage ? `/photos${firstImage.path}` : '';
+        
         const workRow = document.createElement('div');
         workRow.className = 'work-row';
         workRow.dataset.year = folder.year;
         workRow.dataset.month = folder.month;
         workRow.dataset.title = folder.location;
+        workRow.dataset.background = backgroundImage; // Store image path as data attribute
         workRow.onclick = () => showGallery(folder.path);
         
         const monthName = monthNames[folder.month] || folder.month;
@@ -787,6 +808,40 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
+
+function toggleView() {
+    const worksList = document.querySelector('.works-list');
+    const listIcon = document.querySelector('.list-icon');
+    const gridIcon = document.querySelector('.grid-icon');
+    
+    worksList.classList.toggle('grid-view');
+    
+    // Set background images when switching to grid view
+    if (worksList.classList.contains('grid-view')) {
+        document.querySelectorAll('.work-row').forEach(row => {
+            row.style.backgroundImage = `url('${row.dataset.background}')`;
+        });
+        listIcon.style.display = 'none';
+        gridIcon.style.display = 'block';
+    } else {
+        document.querySelectorAll('.work-row').forEach(row => {
+            row.style.backgroundImage = 'none';
+        });
+        listIcon.style.display = 'block';
+        gridIcon.style.display = 'none';
+    }
+    
+    localStorage.setItem('viewPreference', worksList.classList.contains('grid-view') ? 'grid' : 'list');
+}
+
+// Add this to your initialization code
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore view preference
+    const viewPreference = localStorage.getItem('viewPreference');
+    if (viewPreference === 'grid') {
+        toggleView();
+    }
+});
 </script> 
 
 <style>
@@ -1067,7 +1122,9 @@ document.addEventListener('keydown', function(event) {
 
 .content {
     flex: 1;
-    padding: 1.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    margin-top: 1.5rem;
     overflow-y: auto;
     position: relative;
 }
@@ -1076,6 +1133,63 @@ document.addEventListener('keydown', function(event) {
     .construction-notice {
         margin-top: auto;
         padding-top: 20px;
+    }
+}
+
+/* Toggle Button Styles */
+.view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.view-toggle svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Grid View Styles */
+.works-list.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    gap: 90px;
+    width: 100%;
+    padding: 20px 0;
+    height: auto;
+    margin-bottom: 500px;
+}
+
+.works-list.grid-view .work-row {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    border: 1px solid #eee;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.works-list.grid-view .work-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.works-list.grid-view .title {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.works-list.grid-view .month-year {
+    text-align: left;
+}
+
+/* Responsive adjustments for grid view */
+@media (max-width: 768px) {
+    .works-list.grid-view {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
 }
 </style> 
