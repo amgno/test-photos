@@ -491,7 +491,7 @@ select:disabled {
 .works-list.grid-view {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2px;
+    gap: 60px 20px; /* First value is row gap, second is column gap */
     width: 100%;
     padding: 0;
 }
@@ -499,61 +499,55 @@ select:disabled {
 .works-list.grid-view .work-row {
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 0;
     border-radius: 0;
     transition: opacity 0.2s ease;
-    height: 300px;
+    height: 300px; /* Reduced because label is now outside */
+    position: relative;
     background-size: cover;
     background-position: center;
-    position: relative;
-    color: white;
-    justify-content: flex-end;
 }
 
-.works-list.grid-view .work-row::before {
-    content: '';
+/* Remove the pseudo-element styles */
+.works-list.grid-view .work-row::before,
+.works-list.grid-view .work-row::after {
+    display: none;
+}
+
+/* Position labels below the image container */
+.works-list.grid-view .title,
+.works-list.grid-view .month-year {
     position: absolute;
-    bottom: 0;
     left: 0;
-    right: 0;
-    height: 30%;
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-    z-index: 1;
+    color: black;
+}
+
+.works-list.grid-view .title {
+    bottom: -30px;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+}
+
+.works-list.grid-view .month-year {
+    bottom: -50px;
+    font-size: 14px;
+    opacity: 0.5;
 }
 
 .works-list.grid-view .work-row:hover {
     opacity: 0.95;
 }
 
-.works-list.grid-view .title {
-    font-size: 16px;
-    margin-bottom: 4px;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: relative;
-    z-index: 2;
-}
-
-.works-list.grid-view .month-year {
-    text-align: left;
-    font-size: 14px;
-    position: relative;
-    z-index: 2;
-}
-
-.works-list.grid-view .work-row .year {
-    color: rgba(255,255,255,0.5);
-}
-
-/* Responsive adjustments for grid view */
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .works-list.grid-view {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 1px;
+        gap: 60px 10px; /* Adjusted for mobile */
     }
     
     .works-list.grid-view .work-row {
-        height: 250px;
+        height: 200px;
     }
 }

@@ -836,12 +836,13 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Grid View Styles */
 .works-list.grid-view {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-    gap: 90px;
+    grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+    gap: 1px;
     width: 100%;
     padding: 20px 0;
     height: auto;
     margin-bottom: 500px;
+    overflow:visible;
 }
 
 .works-list.grid-view .work-row {
@@ -850,6 +851,7 @@ document.addEventListener('DOMContentLoaded', function() {
     padding: 15px;
     border: 1px solid #eee;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 75px;
 }
 
 .works-list.grid-view .work-row:hover {
