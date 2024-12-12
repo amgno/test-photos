@@ -344,11 +344,8 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
         thumbnail.dataset.index = index;
         
         thumbnail.onclick = () => {
-            const offset = index * window.innerWidth;
-            photoGrid.scrollTo({
-                left: offset,
-                behavior: 'smooth'
-            });
+            const photoItem = photoGrid.children[index];
+            photoItem.scrollIntoView({ behavior: 'smooth' });
             updateThumbnails(index);
         };
         thumbnailNav.appendChild(thumbnail);
@@ -356,86 +353,93 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
     
     galleryView.appendChild(thumbnailNav);
     
-    photoGrid.addEventListener('scroll', () => {
-        const scrollPosition = photoGrid.scrollLeft;
-        const itemWidth = window.innerWidth;
-        const currentIndex = Math.round(scrollPosition / itemWidth);
-        if (currentIndex >= 0) {
-            updateThumbnails(currentIndex);
-        }
-    });
-    
-    updateThumbnails(0);
-    
+    // Add auto-hide functionality
     let navTimeout;
     const hideNav = () => {
         thumbnailNav.style.opacity = '0';
+        thumbnailNav.style.pointerEvents = 'none';
     };
-
-    galleryView.addEventListener('mousemove', () => {
+    
+    const showNav = () => {
         thumbnailNav.style.opacity = '1';
+        thumbnailNav.style.pointerEvents = 'auto';
         clearTimeout(navTimeout);
-        navTimeout = setTimeout(hideNav, 2000);
+        navTimeout = setTimeout(hideNav, 3000); // Hide after 3 seconds
+    };
+    
+    // Show nav on any interaction
+    photoGrid.addEventListener('mousemove', showNav);
+    photoGrid.addEventListener('touchstart', showNav);
+    photoGrid.addEventListener('scroll', showNav);
+    thumbnailNav.addEventListener('mouseover', () => {
+        clearTimeout(navTimeout); // Keep nav visible while hovering
+        thumbnailNav.style.opacity = '1';
+        thumbnailNav.style.pointerEvents = 'auto';
     });
-
-    galleryView.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    // Add keyboard navigation
+    thumbnailNav.addEventListener('mouseleave', () => {
+        navTimeout = setTimeout(hideNav, 3000);
+    });
+    
+    // Initial show/hide
+    showNav();
+    
+    // Simplified scroll handler
+    photoGrid.addEventListener('scroll', () => {
+        const index = Math.round(photoGrid.scrollLeft / photoGrid.offsetWidth);
+        updateThumbnails(index);
+    });
+    
+    // Simplified keyboard navigation
     const handleKeydown = (event) => {
         const totalPhotos = folderImages.length;
-        const currentIndex = Math.round(photoGrid.scrollLeft / window.innerWidth);
+        const currentIndex = Math.round(photoGrid.scrollLeft / photoGrid.offsetWidth);
 
         if (event.key === 'ArrowRight' && currentIndex < totalPhotos - 1) {
-            const nextIndex = currentIndex + 1;
-            photoGrid.scrollTo({
-                left: nextIndex * window.innerWidth,
-                behavior: 'smooth'
-            });
-            updateThumbnails(nextIndex);
+            const nextItem = photoGrid.children[currentIndex + 1];
+            nextItem.scrollIntoView({ behavior: 'smooth' });
+            updateThumbnails(currentIndex + 1);
         } else if (event.key === 'ArrowLeft' && currentIndex > 0) {
-            const prevIndex = currentIndex - 1;
-            photoGrid.scrollTo({
-                left: prevIndex * window.innerWidth,
-                behavior: 'smooth'
-            });
-            updateThumbnails(prevIndex);
+            const prevItem = photoGrid.children[currentIndex - 1];
+            prevItem.scrollIntoView({ behavior: 'smooth' });
+            updateThumbnails(currentIndex - 1);
         }
     };
 
     document.addEventListener('keydown', handleKeydown);
 
+    // Initial position
+    if (initialPhotoIndex > 0) {
+        const targetItem = photoGrid.children[initialPhotoIndex];
+        targetItem.scrollIntoView({ behavior: 'instant' });
+        updateThumbnails(initialPhotoIndex);
+    }
+
+    galleryView.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
     // Clean up event listener when gallery is closed
     const originalHideGallery = hideGallery;
     hideGallery = (event) => {
+        photoGrid.removeEventListener('mousemove', showNav);
+        photoGrid.removeEventListener('touchstart', showNav);
+        photoGrid.removeEventListener('scroll', showNav);
+        clearTimeout(navTimeout);
         document.removeEventListener('keydown', handleKeydown);
         originalHideGallery(event);
     };
-
-    // After loading images, ensure we're at the correct position
-    if (initialPhotoIndex > 0) {
-        setTimeout(() => {
-            photoGrid.scrollTo({
-                left: initialPhotoIndex * window.innerWidth,
-                behavior: 'smooth'
-            });
-            updateThumbnails(initialPhotoIndex);
-        }, 100);
-    } else {
-        // Ensure we're at the first image
-        photoGrid.scrollTo({
-            left: 0,
-            behavior: 'instant'
-        });
-        updateThumbnails(0);
-    }
 }
 
 function updateThumbnails(activeIndex) {
     const thumbnails = document.querySelectorAll('.thumbnail');
     const thumbnailNav = document.querySelector('.thumbnail-nav');
     
-    thumbnails.forEach((thumb) => thumb.classList.remove('active'));
+    if (!thumbnailNav || !thumbnails.length) return;
+    
+    // Remove active class from all thumbnails
+    thumbnails.forEach(thumb => thumb.classList.remove('active'));
+    
+    // Ensure activeIndex is within bounds
+    activeIndex = Math.max(0, Math.min(activeIndex, thumbnails.length - 1));
     
     const activeThumbnail = thumbnails[activeIndex];
     if (activeThumbnail) {
@@ -714,16 +718,21 @@ function sharePhoto(event) {
 
 .photo-grid {
     display: flex;
+    width: 100%;
+    height: 100%;
     scroll-snap-type: x mandatory;
     overflow-x: auto;
     scroll-behavior: smooth;
-    width: 100%;
 }
 
 .photo-item {
-    scroll-snap-align: center;
-    width: 100vw;
-    flex-shrink: 0;
+    flex: 0 0 100%;
+    width: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .gallery-view {
