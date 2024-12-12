@@ -128,22 +128,37 @@ body {
     font-size: 0.9rem;
 }
 
-.gallery-header {
-    position: fixed;
-    top: 40px;
-    right: 40px;
-    z-index: 1001;
-}
-
-.close-button {
+.gallery-controls {
     position: fixed;
     top: 20px;
     right: 30px;
     z-index: 1002;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.share-button {
+    padding: 8px 16px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s ease;
+}
+
+.close-button {
     font-size: 24px;
     color: #000;
     text-decoration: none;
     padding: 10px;
+}
+
+.share-button:hover,
+.close-button:hover {
+    opacity: 0.8;
 }
 
 h1 {
@@ -554,10 +569,9 @@ select:disabled {
 
 .share-button {
     position: fixed;
-    top: 20px;
-    right: 80px; /* Position it to the left of the close button */
+    right: 90px; /* Adjusted to match close button spacing */
     z-index: 1002;
-    padding: 8px 16px;
+    padding: 10px; /* Match close button padding */
     background: white;
     border: none;
     cursor: pointer;

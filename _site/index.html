@@ -230,8 +230,10 @@
 
     <div class="gallery-view">
         <div class="gallery-header">
-            <button class="share-button" onclick="sharePhoto(event)">Share</button>
-            <a href="#" class="close-button" onclick="hideGallery(event)">×</a>
+            <div class="gallery-controls">
+                <button class="share-button" onclick="sharePhoto(event)">SHARE</button>
+                <a href="#" class="close-button" onclick="hideGallery(event)">×</a>
+            </div>
         </div>
         <div class="photo-grid"></div>
     </div>
@@ -590,6 +592,9 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
     // Store current folder for sharing
     photoGrid.dataset.currentFolder = folderPath;
     
+    // Reset scroll position immediately
+    photoGrid.scrollLeft = 0;
+    
     // Add loading overlay if it doesn't exist
     let loadingOverlay = document.querySelector('.loading-overlay');
     if (!loadingOverlay) {
@@ -727,7 +732,7 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
         originalHideGallery(event);
     };
 
-    // Scroll to initial photo if specified
+    // After loading images, ensure we're at the correct position
     if (initialPhotoIndex > 0) {
         setTimeout(() => {
             photoGrid.scrollTo({
@@ -736,6 +741,13 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
             });
             updateThumbnails(initialPhotoIndex);
         }, 100);
+    } else {
+        // Ensure we're at the first image
+        photoGrid.scrollTo({
+            left: 0,
+            behavior: 'instant'
+        });
+        updateThumbnails(0);
     }
 }
 
