@@ -68,6 +68,7 @@ title: Photos
 
     <div class="gallery-view">
         <div class="gallery-header">
+            <button class="share-button" onclick="sharePhoto(event)">Share</button>
             <a href="#" class="close-button" onclick="hideGallery(event)">×</a>
         </div>
         <div class="photo-grid"></div>
@@ -261,9 +262,13 @@ function filterWorks() {
     filterAndSortWorks();
 }
 
-function showGallery(folderPath) {
+function showGallery(folderPath, initialPhotoIndex = 0) {
     console.log('Showing gallery for:', folderPath);
     const galleryView = document.querySelector('.gallery-view');
+    const photoGrid = galleryView.querySelector('.photo-grid');
+    
+    // Store current folder for sharing
+    photoGrid.dataset.currentFolder = folderPath;
     
     // Add loading overlay if it doesn't exist
     let loadingOverlay = document.querySelector('.loading-overlay');
@@ -277,7 +282,6 @@ function showGallery(folderPath) {
     // Show loading overlay
     loadingOverlay.classList.add('active');
     
-    const photoGrid = galleryView.querySelector('.photo-grid');
     const sidebar = document.querySelector('.sidebar');
     
     if (window.innerWidth <= 768) {
@@ -402,6 +406,17 @@ function showGallery(folderPath) {
         document.removeEventListener('keydown', handleKeydown);
         originalHideGallery(event);
     };
+
+    // Scroll to initial photo if specified
+    if (initialPhotoIndex > 0) {
+        setTimeout(() => {
+            photoGrid.scrollTo({
+                left: initialPhotoIndex * window.innerWidth,
+                behavior: 'smooth'
+            });
+            updateThumbnails(initialPhotoIndex);
+        }, 100);
+    }
 }
 
 function updateThumbnails(activeIndex) {
@@ -521,7 +536,49 @@ document.addEventListener('DOMContentLoaded', function() {
     if (viewPreference === 'grid') {
         toggleView();
     }
+
+    // Check URL parameters for shared link
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedFolder = urlParams.get('folder');
+    const sharedPhotoIndex = parseInt(urlParams.get('photo')) || 0;
+    
+    if (sharedFolder) {
+        showGallery(sharedFolder, sharedPhotoIndex);
+    }
 });
+
+// Add these functions to your JavaScript
+function sharePhoto(event) {
+    event.preventDefault();
+    const galleryView = document.querySelector('.gallery-view');
+    const photoGrid = galleryView.querySelector('.photo-grid');
+    
+    // Get current folder and photo index
+    const currentScroll = photoGrid.scrollLeft;
+    const photoWidth = window.innerWidth;
+    const currentPhotoIndex = Math.round(currentScroll / photoWidth);
+    
+    // Get current folder path from the active work
+    const currentFolder = photoGrid.dataset.currentFolder;
+    
+    // Create shareable URL
+    const url = new URL(window.location.href);
+    url.searchParams.set('folder', currentFolder);
+    url.searchParams.set('photo', currentPhotoIndex);
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(url.toString())
+        .then(() => {
+            const shareButton = document.querySelector('.share-button');
+            shareButton.textContent = 'Copied!';
+            setTimeout(() => {
+                shareButton.textContent = 'Share';
+            }, 2000);
+        })
+        .catch(err => {
+            console.error('Failed to copy:', err);
+        });
+}
 </script> 
 
 <style>
