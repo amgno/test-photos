@@ -448,6 +448,40 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
 
     // Set initial counter state
     updateCounter(initialPhotoIndex);
+
+    // Add this inside the showGallery function, just before the return statement
+    const prevButton = galleryView.querySelector('.prev');
+    const nextButton = galleryView.querySelector('.next');
+
+    prevButton.onclick = () => {
+        const currentIndex = Math.round(photoGrid.scrollLeft / photoGrid.offsetWidth);
+        if (currentIndex > 0) {
+            const prevItem = photoGrid.children[currentIndex - 1];
+            prevItem.scrollIntoView({ behavior: 'smooth' });
+            updateThumbnails(currentIndex - 1);
+            updateCounter(currentIndex - 1);
+        }
+    };
+
+    nextButton.onclick = () => {
+        const currentIndex = Math.round(photoGrid.scrollLeft / photoGrid.offsetWidth);
+        if (currentIndex < photoGrid.children.length - 1) {
+            const nextItem = photoGrid.children[currentIndex + 1];
+            nextItem.scrollIntoView({ behavior: 'smooth' });
+            updateThumbnails(currentIndex + 1);
+            updateCounter(currentIndex + 1);
+        }
+    };
+
+    // Update button states initially and on scroll
+    const updateNavigationButtons = () => {
+        const currentIndex = Math.round(photoGrid.scrollLeft / photoGrid.offsetWidth);
+        prevButton.style.opacity = currentIndex === 0 ? '0.3' : '1';
+        nextButton.style.opacity = currentIndex === photoGrid.children.length - 1 ? '0.3' : '1';
+    };
+
+    photoGrid.addEventListener('scroll', updateNavigationButtons);
+    updateNavigationButtons(); // Initial state
 }
 
 function updateThumbnails(activeIndex) {
