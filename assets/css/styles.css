@@ -354,6 +354,11 @@ h1 {
 }
 
 @media (max-width: 768px) {
+
+    .filters {
+        margin-bottom: 30px;
+    }   
+
     .container {
         display: block;
         padding: 20px;
@@ -362,14 +367,16 @@ h1 {
     .sidebar {
         position: relative;
         width: 100%;
-        margin-bottom: 60px;
+        margin-bottom: 90px;
+        display: flex;
+        height: 140px;
     }
 
     .construction-notice {
+        margin-left: 30%;
+        width: 70%;
         position: relative;
         bottom: auto;
-        width: auto;
-        margin-top: 40px;
     }
 
     .content {
