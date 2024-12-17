@@ -616,5 +616,17 @@ function sharePhoto(event) {
             console.error('Failed to copy:', err);
         });
 }
+
+// Add this function after updateThumbnails
+function updateCounter(currentIndex) {
+    const photoGrid = document.querySelector('.photo-grid');
+    const photoCounter = document.querySelector('.photo-counter');
+    const totalPhotos = photoGrid.children.length;
+    
+    if (photoCounter && totalPhotos > 0) {
+        // Add 1 to currentIndex since we want to display 1-based counting
+        photoCounter.textContent = `${currentIndex + 1}/${totalPhotos}`;
+    }
+}
 </script> 
 
