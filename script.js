@@ -7,13 +7,14 @@ const titleFilter = document.getElementById('title-filter');
 function processDirectoryName(dirname) {
     const parts = dirname.split('-');
     const year = parts[0];
-    const title = parts.slice(1).map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    const month = parts[1];
+    const location = parts.slice(2).join(' ');
     
     return {
-        year: parseInt(year),
-        title: title,
+        year: year,
+        month: month,
+        location: location,
+        path: `/img/${dirname}`,
         dirname: dirname
     };
 }
@@ -60,25 +61,22 @@ function populateFilters(works) {
 function displayWorks(filteredWorks) {
     worksList.innerHTML = '';
     filteredWorks.forEach(work => {
-        const yearSpan = document.createElement('span');
-        yearSpan.className = 'year';
-        yearSpan.textContent = work.year;
-
-        const titleSpan = document.createElement('span');
-        titleSpan.className = 'title';
-        titleSpan.textContent = work.title;
-
-        // Make the row clickable
         const row = document.createElement('div');
         row.className = 'work-row';
-        row.appendChild(yearSpan);
-        row.appendChild(titleSpan);
         
-        // Add click event to show directory contents
-        row.addEventListener('click', () => {
-            window.location.href = `img/${work.dirname}/index.html`;
+        row.innerHTML = `
+            <span class="title">${work.location}</span>
+            <span class="month-year">
+                <em>${work.month}</em>
+                ${work.year}
+            </span>
+        `;
+        
+        row.addEventListener('click', (e) => {
+            e.preventDefault();
+            showGallery(work.path);
         });
-
+        
         worksList.appendChild(row);
     });
 }
@@ -102,14 +100,100 @@ function filterWorks(works) {
 
 // Initialize the page
 function initialize() {
-    const works = getWorks();
+    // Get directories from the imagePaths
+    const directories = [...new Set(imagePaths.map(path => {
+        const parts = path.split('/');
+        return parts[2]; // Get the directory name
+    }))];
+    
+    const works = directories.map(processDirectoryName);
     populateFilters(works);
     displayWorks(works);
-
-    // Event listeners
-    yearFilter.addEventListener('change', () => filterWorks(works));
-    titleFilter.addEventListener('change', () => filterWorks(works));
 }
 
 // Start the application
-initialize(); 
+initialize();
+
+function showGallery(folderPath, initialPhotoIndex = 0) {
+    console.log('Showing gallery for:', folderPath);
+    const galleryView = document.querySelector('.gallery-view');
+    const photoGrid = galleryView.querySelector('.photo-grid');
+    const photoCounter = document.querySelector('.photo-counter');
+    
+    // Store current folder for sharing
+    photoGrid.dataset.currentFolder = folderPath;
+    
+    // Clear existing content
+    photoGrid.innerHTML = '';
+    
+    // Get folder info and images
+    const folderInfo = imageData.folders.find(f => f.path === folderPath);
+    const folderImages = imageData.images.filter(img => img.folder === folderPath);
+    const totalImages = folderImages.length;
+    
+    console.log('Total images:', totalImages);
+    
+    // Create photo items
+    folderImages.forEach((image, index) => {
+        const photoItem = document.createElement('div');
+        photoItem.className = 'photo-item';
+        photoItem.innerHTML = `
+            <div class="image-wrapper">
+                <img src="{{ site.baseurl }}${image.path}" loading="lazy" alt="Photo ${index + 1}">
+                <div class="photo-info">
+                    <div class="location">${folderInfo.location}</div>
+                    <div class="year">${folderInfo.year}</div>
+                </div>
+            </div>
+        `;
+        photoGrid.appendChild(photoItem);
+    });
+    
+    // Navigation functions
+    const updateCounter = (index) => {
+        console.log('Updating counter:', index + 1, totalImages);
+        photoCounter.textContent = `${index + 1}/${totalImages}`;
+    };
+    
+    const navigateToImage = (index) => {
+        if (index >= 0 && index < totalImages) {
+            const photoItem = photoGrid.children[index];
+            if (photoItem) {
+                photoItem.scrollIntoView({ behavior: 'smooth' });
+                updateCounter(index);
+            }
+        }
+    };
+    
+    // Setup navigation
+    const prevButton = document.querySelector('.gallery-nav .prev');
+    const nextButton = document.querySelector('.gallery-nav .next');
+    
+    prevButton.onclick = (e) => {
+        e.preventDefault();
+        const currentIndex = Math.floor(photoGrid.scrollLeft / photoGrid.offsetWidth);
+        navigateToImage(currentIndex - 1);
+    };
+    
+    nextButton.onclick = (e) => {
+        e.preventDefault();
+        const currentIndex = Math.floor(photoGrid.scrollLeft / photoGrid.offsetWidth);
+        navigateToImage(currentIndex + 1);
+    };
+    
+    // Update counter on scroll
+    photoGrid.addEventListener('scroll', () => {
+        const currentIndex = Math.floor(photoGrid.scrollLeft / photoGrid.offsetWidth);
+        updateCounter(currentIndex);
+    });
+    
+    // Set initial state and navigate to initial photo
+    updateCounter(initialPhotoIndex);
+    setTimeout(() => {
+        navigateToImage(initialPhotoIndex);
+    }, 100);
+    
+    // Show gallery
+    galleryView.classList.add('active');
+    document.body.style.overflow = 'hidden';
+} 
