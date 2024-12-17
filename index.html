@@ -70,7 +70,7 @@ title: Photos
         <div class="gallery-header">
             <div class="gallery-controls">
                 <button class="share-button" onclick="sharePhoto(event)">SHARE</button>
-                <a href="#" class="close-button" onclick="hideGallery(event)">×</a>
+                <a href="#" class="close-button" onclick="hideGallery(event)">CLOSE</a>
             </div>
         </div>
         <div class="photo-grid"></div>
@@ -288,7 +288,11 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
     if (!loadingOverlay) {
         loadingOverlay = document.createElement('div');
         loadingOverlay.className = 'loading-overlay';
-        loadingOverlay.innerHTML = '<div class="loading-spinner"></div>';
+        loadingOverlay.innerHTML = `
+            <div class="loading-text">
+                Loading<span class="loading-dots"></span>
+            </div>
+        `;
         document.body.appendChild(loadingOverlay);
     }
     
@@ -313,7 +317,10 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
     const checkAllImagesLoaded = () => {
         loadedImages++;
         if (loadedImages === totalImages * 2) { // Main images + thumbnails
-            loadingOverlay.classList.remove('active');
+            // Hide loading overlay with a slight delay for smoother transition
+            setTimeout(() => {
+                loadingOverlay.classList.remove('active');
+            }, 300);
         }
     };
     
@@ -395,6 +402,7 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
     photoGrid.addEventListener('scroll', () => {
         const index = Math.round(photoGrid.scrollLeft / photoGrid.offsetWidth);
         updateThumbnails(index);
+        updateCounter(index);
     });
     
     // Simplified keyboard navigation
@@ -406,10 +414,12 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
             const nextItem = photoGrid.children[currentIndex + 1];
             nextItem.scrollIntoView({ behavior: 'smooth' });
             updateThumbnails(currentIndex + 1);
+            updateCounter(currentIndex + 1);
         } else if (event.key === 'ArrowLeft' && currentIndex > 0) {
             const prevItem = photoGrid.children[currentIndex - 1];
             prevItem.scrollIntoView({ behavior: 'smooth' });
             updateThumbnails(currentIndex - 1);
+            updateCounter(currentIndex - 1);
         }
     };
 
@@ -435,6 +445,9 @@ function showGallery(folderPath, initialPhotoIndex = 0) {
         document.removeEventListener('keydown', handleKeydown);
         originalHideGallery(event);
     };
+
+    // Set initial counter state
+    updateCounter(initialPhotoIndex);
 }
 
 function updateThumbnails(activeIndex) {
