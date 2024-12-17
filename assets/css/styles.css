@@ -76,6 +76,8 @@ h1 {
 .filters select,
 .view-toggle {
     -webkit-appearance: none;
+    -webkit-text-fill-color: #000;
+    color: #000;
     background: none;
     border: none;
     border-bottom: 1px solid #000;
